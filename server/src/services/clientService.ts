@@ -1,4 +1,4 @@
-import { Prisma } from "../generated/prisma/client";
+import { Prisma } from "@prisma/client";
 import { AppError } from "../utils/appError";
 import { prisma } from "../utils/prisma";
 
