@@ -6,6 +6,7 @@ import { env } from "./env";
 const redis = new Redis({
   host: env.REDIS_HOST,
   port: Number(env.REDIS_PORT),
+  password: env.REDIS_PASSWORD,
   maxRetriesPerRequest: 3,
   retryStrategy(times) {
     const delay = Math.min(times * 50, 2000);
@@ -18,6 +19,7 @@ const redis = new Redis({
 const subscriber = new Redis({
   host: env.REDIS_HOST,
   port: Number(env.REDIS_PORT),
+  password: env.REDIS_PASSWORD,
   maxRetriesPerRequest: 3,
   lazyConnect: true,
 });
@@ -26,6 +28,7 @@ const subscriber = new Redis({
 const publisher = new Redis({
   host: env.REDIS_HOST,
   port: Number(env.REDIS_PORT),
+  password: env.REDIS_PASSWORD,
   maxRetriesPerRequest: 3,
   lazyConnect: true,
 });
@@ -86,4 +89,3 @@ export const disconnectRedis = async (): Promise<void> => {
 };
 
 export { publisher, redis, subscriber };
-
