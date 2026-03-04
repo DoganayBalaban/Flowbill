@@ -7,7 +7,7 @@ const redisOptions = {
   host: env.REDIS_HOST,
   port: Number(env.REDIS_PORT),
   password: env.REDIS_PASSWORD,
-  tls: {}, // ⚡ TLS for Upstash
+  tls: {},
   maxRetriesPerRequest: 3,
   retryStrategy(times: number) {
     const delay = Math.min(times * 50, 2000);
