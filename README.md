@@ -40,7 +40,6 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
-        <li><a href="#demo">Demo</a></li>
         <li><a href="#screenshots">Screenshots</a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
@@ -67,21 +66,15 @@
 
 ## About The Project
 
-[![Timelyne Screen Shot][product-screenshot]](https://github.com/doganaybalaban/timelyne)
+<div align="center">
+  <img src="client/public/readme/gif.gif" alt="Timelyne Demo" width="100%">
+</div>
 
 Timelyne is an **all-in-one SaaS platform** designed for freelancers and small agencies to replace scattered tools like Excel, Word, and WhatsApp with a single, professional workspace. It helps you track time, manage projects and clients, automate invoicing, and gain clear financial insights — all through a timeline-driven experience.
 
 **Our core promise:**
 
 > _Running your freelance business should never take more than 10 minutes a day._
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Demo
-
-<div align="center">
-  <img src="client/public/readme/gif.gif" alt="Timelyne Demo" width="100%">
-</div>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -438,7 +431,6 @@ Project Link: [https://github.com/doganaybalaban/timelyne](https://github.com/do
 [issues-url]: https://github.com/doganaybalaban/timelyne/issues
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/doganaybalaban
-[product-screenshot]: client/public/readme/ss-dashboard.png
 
 <!-- Tech Stack Badges -->
 
