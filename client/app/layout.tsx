@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Timelyne - Freelancer Yönetim Sistemi",
+  title: "Flowbill - Freelancer Yönetim Sistemi",
   description: "Freelancer'lar için zaman takibi ve proje yönetimi",
 };
 
