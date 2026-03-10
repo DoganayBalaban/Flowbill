@@ -18,9 +18,9 @@ interface StatsCardsProps {
 }
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "TRY",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
@@ -51,40 +51,40 @@ export function StatsCards({ data, isLoading }: StatsCardsProps) {
 
   const cards = [
     {
-      title: "Aylık Gelir",
+      title: "Monthly Revenue",
       value: formatCurrency(data.monthlyRevenue),
       icon: DollarSign,
       growth: data.growthPercentage,
-      description: "Önceki aya göre",
+      description: "vs. previous month",
       gradient: "from-emerald-500/10 to-emerald-500/5",
       iconColor: "text-emerald-600 dark:text-emerald-400",
       borderColor: "border-emerald-500/20",
     },
     {
-      title: "Çalışma Saati",
+      title: "Hours Tracked",
       value: formatHours(data.totalHours),
       icon: Clock,
-      subtitle: `${formatHours(data.billableHours)} faturalanabilir`,
+      subtitle: `${formatHours(data.billableHours)} billable`,
       gradient: "from-blue-500/10 to-blue-500/5",
       iconColor: "text-blue-600 dark:text-blue-400",
       borderColor: "border-blue-500/20",
     },
     {
-      title: "Aktif Projeler",
+      title: "Active Projects",
       value: data.activeProjects.toString(),
       icon: FolderOpen,
-      description: "Devam eden projeler",
+      description: "In progress",
       gradient: "from-violet-500/10 to-violet-500/5",
       iconColor: "text-violet-600 dark:text-violet-400",
       borderColor: "border-violet-500/20",
     },
     {
-      title: "Bekleyen Ödeme",
+      title: "Outstanding",
       value: formatCurrency(data.pendingAmount),
       icon: AlertTriangle,
       badge:
         data.overdueInvoices > 0
-          ? `${data.overdueInvoices} gecikmiş`
+          ? `${data.overdueInvoices} overdue`
           : undefined,
       gradient: "from-amber-500/10 to-amber-500/5",
       iconColor: "text-amber-600 dark:text-amber-400",

@@ -23,35 +23,35 @@ const riskStyles = {
     text: "text-red-700 dark:text-red-400",
     border: "border-red-200 dark:border-red-800",
     badge: "bg-red-600 hover:bg-red-600",
-    label: "Kritik",
+    label: "Critical",
   },
   high: {
     bg: "bg-orange-100 dark:bg-orange-900/30",
     text: "text-orange-700 dark:text-orange-400",
     border: "border-orange-200 dark:border-orange-800",
     badge: "bg-orange-500 hover:bg-orange-500",
-    label: "Yüksek",
+    label: "High",
   },
   medium: {
     bg: "bg-yellow-100 dark:bg-yellow-900/30",
     text: "text-yellow-700 dark:text-yellow-400",
     border: "border-yellow-200 dark:border-yellow-800",
     badge: "bg-yellow-500 hover:bg-yellow-500",
-    label: "Orta",
+    label: "Medium",
   },
 };
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "TRY",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
 }
 
 function formatDate(dateStr: string): string {
-  return new Intl.DateTimeFormat("tr-TR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
   }).format(new Date(dateStr));
@@ -65,10 +65,10 @@ export function OverdueAlerts({ data, isLoading }: OverdueAlertsProps) {
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              Gecikmiş Faturalar
+              Overdue Invoices
             </CardTitle>
             <CardDescription>
-              Vadesi geçmiş ödeme bekleyen faturalar
+              Invoices past their due date awaiting payment
             </CardDescription>
           </div>
           {data && data.totalOverdue > 0 && (
@@ -77,7 +77,7 @@ export function OverdueAlerts({ data, isLoading }: OverdueAlertsProps) {
                 {formatCurrency(data.totalAmount)}
               </p>
               <p className="text-xs text-muted-foreground">
-                {data.totalOverdue} fatura
+                {data.totalOverdue} {data.totalOverdue === 1 ? "invoice" : "invoices"}
               </p>
             </div>
           )}
@@ -95,9 +95,9 @@ export function OverdueAlerts({ data, isLoading }: OverdueAlertsProps) {
             <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-3">
               <DollarSign className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <p className="text-sm font-medium">Gecikmiş fatura yok!</p>
+            <p className="text-sm font-medium">No overdue invoices!</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Tüm faturalar zamanında ödenmiş
+              All invoices have been paid on time
             </p>
           </div>
         ) : (
@@ -130,7 +130,7 @@ export function OverdueAlerts({ data, isLoading }: OverdueAlertsProps) {
                     </p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1 justify-end">
                       <Calendar className="h-3 w-3" />
-                      {invoice.daysOverdue} gün gecikmiş
+                      {invoice.daysOverdue} {invoice.daysOverdue === 1 ? "day" : "days"} overdue
                     </p>
                   </div>
                 </div>

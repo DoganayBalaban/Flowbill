@@ -27,27 +27,27 @@ interface RevenueChartProps {
 function formatMonth(month: string): string {
   const [year, m] = month.split("-");
   const months = [
-    "Oca",
-    "Şub",
+    "Jan",
+    "Feb",
     "Mar",
-    "Nis",
+    "Apr",
     "May",
-    "Haz",
-    "Tem",
-    "Ağu",
-    "Eyl",
-    "Eki",
-    "Kas",
-    "Ara",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
   return `${months[parseInt(m) - 1]} ${year.slice(2)}`;
 }
 
 function formatCurrency(value: number): string {
   if (value >= 1000) {
-    return `₺${(value / 1000).toFixed(1)}K`;
+    return `$${(value / 1000).toFixed(1)}K`;
   }
-  return `₺${value}`;
+  return `$${value}`;
 }
 
 function CustomTooltip({
@@ -67,9 +67,9 @@ function CustomTooltip({
         {label ? formatMonth(label) : ""}
       </p>
       <p className="text-sm font-bold">
-        {new Intl.NumberFormat("tr-TR", {
+        {new Intl.NumberFormat("en-US", {
           style: "currency",
-          currency: "TRY",
+          currency: "USD",
           minimumFractionDigits: 0,
         }).format(payload[0].value)}
       </p>
@@ -81,15 +81,15 @@ export function RevenueChart({ data, isLoading }: RevenueChartProps) {
   return (
     <Card className="border transition-all duration-300 hover:shadow-lg">
       <CardHeader>
-        <CardTitle className="text-lg">Gelir Trendi</CardTitle>
-        <CardDescription>Son 12 aylık gelir grafiği</CardDescription>
+        <CardTitle className="text-lg">Revenue Trend</CardTitle>
+        <CardDescription>Last 12 months of revenue</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-[300px] w-full rounded-lg" />
         ) : !data || data.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Henüz gelir verisi yok
+            No revenue data yet
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>

@@ -65,19 +65,19 @@ function getActivityMeta(type: string) {
 
   // Label
   const entityLabels: Record<string, string> = {
-    invoice: "Fatura",
-    project: "Proje",
-    client: "Müşteri",
-    timer: "Zamanlayıcı",
-    time_entry: "Zaman kaydı",
-    payment: "Ödeme",
-    task: "Görev",
+    invoice: "Invoice",
+    project: "Project",
+    client: "Client",
+    timer: "Timer",
+    time_entry: "Time entry",
+    payment: "Payment",
+    task: "Task",
   };
 
   const actionLabels: Record<string, string> = {
-    create: "oluşturuldu",
-    update: "güncellendi",
-    delete: "silindi",
+    create: "created",
+    update: "updated",
+    delete: "deleted",
   };
 
   let entity = type;
@@ -108,13 +108,13 @@ function timeAgo(dateStr: string): string {
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
 
-  if (diffMin < 1) return "Az önce";
-  if (diffMin < 60) return `${diffMin} dk önce`;
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr} saat önce`;
+  if (diffHr < 24) return `${diffHr}h ago`;
   const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay} gün önce`;
-  return new Intl.DateTimeFormat("tr-TR", {
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
   }).format(date);
@@ -124,8 +124,8 @@ export function RecentActivity({ data, isLoading }: RecentActivityProps) {
   return (
     <Card className="border transition-all duration-300 hover:shadow-lg">
       <CardHeader>
-        <CardTitle className="text-lg">Son Aktiviteler</CardTitle>
-        <CardDescription>Son yapılan işlemler</CardDescription>
+        <CardTitle className="text-lg">Recent Activity</CardTitle>
+        <CardDescription>Latest actions across your workspace</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -145,9 +145,9 @@ export function RecentActivity({ data, isLoading }: RecentActivityProps) {
             <div className="p-3 rounded-full bg-muted mb-3">
               <Clock className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="text-sm font-medium">Henüz aktivite yok</p>
+            <p className="text-sm font-medium">No activity yet</p>
             <p className="text-xs text-muted-foreground mt-1">
-              İşlem yaptığınızda burada görünecek
+              Your actions will appear here
             </p>
           </div>
         ) : (

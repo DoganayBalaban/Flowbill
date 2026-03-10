@@ -12,9 +12,9 @@ import { useClients } from "@/lib/hooks/useClients";
 import { Crown, TrendingUp, Users } from "lucide-react";
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "TRY",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
@@ -39,9 +39,9 @@ export function TopClients() {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Crown className="h-5 w-5 text-amber-500" />
-          Top Müşteriler
+          Top Clients
         </CardTitle>
-        <CardDescription>En çok gelir getiren müşteriler</CardDescription>
+        <CardDescription>Clients by total revenue</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -62,9 +62,9 @@ export function TopClients() {
             <div className="p-3 rounded-full bg-muted mb-3">
               <Users className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="text-sm font-medium">Henüz müşteri yok</p>
+            <p className="text-sm font-medium">No clients yet</p>
             <p className="text-xs text-muted-foreground mt-1">
-              İlk müşterinizi ekleyerek başlayın
+              Add your first client to get started
             </p>
           </div>
         ) : (
@@ -119,7 +119,7 @@ export function TopClients() {
                     </p>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground justify-end">
                       <TrendingUp className="h-3 w-3" />
-                      {client._count?.projects || 0} proje
+                      {client._count?.projects || 0} {(client._count?.projects || 0) === 1 ? "project" : "projects"}
                     </div>
                   </div>
                 </div>

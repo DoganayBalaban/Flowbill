@@ -69,7 +69,7 @@ export default function DashboardPage() {
 
   // Last data update timestamp
   const lastUpdated = stats.dataUpdatedAt
-    ? new Date(stats.dataUpdatedAt).toLocaleTimeString("tr-TR", {
+    ? new Date(stats.dataUpdatedAt).toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       })
@@ -85,11 +85,10 @@ export default function DashboardPage() {
               <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                  E-posta Doğrulanmadı
+                  Email Not Verified
                 </h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                  Tüm özelliklere erişmek için lütfen e-posta adresinizi
-                  doğrulayın.
+                  Please verify your email address to access all features.
                 </p>
                 <Button
                   variant="outline"
@@ -103,11 +102,11 @@ export default function DashboardPage() {
                   ) : (
                     <Mail className="mr-2 h-4 w-4" />
                   )}
-                  Doğrulama E-postası Gönder
+                  Resend Verification Email
                 </Button>
                 {resendVerification.isSuccess && (
                   <p className="text-sm text-green-600 mt-2">
-                    Doğrulama e-postası gönderildi!
+                    Verification email sent!
                   </p>
                 )}
               </div>
@@ -120,16 +119,16 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Hoş Geldin, {user.first_name}! 👋
+            Welcome back, {user.first_name}!
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            İşte bu ayki genel durumun
+            Here&apos;s your overview for this month
           </p>
         </div>
         <div className="flex items-center gap-2">
           {lastUpdated && (
             <span className="text-xs text-muted-foreground">
-              Son güncelleme: {lastUpdated}
+              Updated at {lastUpdated}
             </span>
           )}
           <Button
@@ -141,7 +140,7 @@ export default function DashboardPage() {
             <RefreshCw
               className={`h-3.5 w-3.5 ${stats.isFetching ? "animate-spin" : ""}`}
             />
-            Yenile
+            Refresh
           </Button>
         </div>
       </div>
