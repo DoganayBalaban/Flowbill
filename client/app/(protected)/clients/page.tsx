@@ -1,6 +1,16 @@
 "use client";
 
 import { ClientFormDialog } from "@/components/client-form-dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +71,7 @@ export default function ClientsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useClients(params);
   const deleteClient = useDeleteClient();
@@ -95,9 +106,12 @@ export default function ClientsPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this client?")) {
-      deleteClient.mutate(id);
-    }
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) deleteClient.mutate(deleteId);
+    setDeleteId(null);
   };
 
   const handleDialogClose = (open: boolean) => {
@@ -369,6 +383,30 @@ export default function ClientsPage() {
         onOpenChange={handleDialogClose}
         client={editingClient}
       />
+
+      {/* Delete Confirm Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Client</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this client? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteClient.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete loading indicator */}
       {deleteClient.isPending && (
