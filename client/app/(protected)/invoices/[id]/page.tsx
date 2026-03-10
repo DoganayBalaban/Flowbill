@@ -45,11 +45,11 @@ import { toast } from "sonner";
 
 function getStatusLabel(status: string) {
   const map: Record<string, string> = {
-    draft: "Taslak",
-    sent: "Gönderildi",
-    paid: "Ödendi",
-    overdue: "Vadesi Geçti",
-    cancelled: "İptal",
+    draft: "Draft",
+    sent: "Sent",
+    paid: "Paid",
+    overdue: "Overdue",
+    cancelled: "Cancelled",
   };
   return map[status] || status;
 }
@@ -78,16 +78,16 @@ function getPdfStatusBadge(status: string) {
       variant: "default" | "secondary" | "destructive" | "outline";
     }
   > = {
-    not_generated: { label: "Oluşturulmadı", variant: "outline" },
-    processing: { label: "İşleniyor...", variant: "default" },
-    generated: { label: "Hazır", variant: "secondary" },
-    failed: { label: "Başarısız", variant: "destructive" },
+    not_generated: { label: "Not Generated", variant: "outline" },
+    processing: { label: "Processing...", variant: "default" },
+    generated: { label: "Ready", variant: "secondary" },
+    failed: { label: "Failed", variant: "destructive" },
   };
   return map[status] || { label: status, variant: "outline" as const };
 }
 
 function formatCurrency(amount: number, currency = "USD") {
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
   }).format(Number(amount));
@@ -95,7 +95,7 @@ function formatCurrency(amount: number, currency = "USD") {
 
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return "—";
-  return new Intl.DateTimeFormat("tr-TR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -130,14 +130,14 @@ export default function InvoiceDetailPage() {
   if (error || !invoice) {
     return (
       <div className="max-w-5xl mx-auto p-6 text-center py-20">
-        <p className="text-destructive text-lg">Fatura bulunamadı.</p>
+        <p className="text-destructive text-lg">Invoice not found.</p>
         <Button
           variant="outline"
           className="mt-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Geri Dön
+          Go Back
         </Button>
       </div>
     );
@@ -155,24 +155,24 @@ export default function InvoiceDetailPage() {
       { id: invoiceId },
       {
         onSuccess: () =>
-          toast.info("PDF oluşturuluyor...", {
-            description: "Hazır olduğunda bildirim alacaksınız.",
+          toast.info("Generating PDF...", {
+            description: "You will be notified when it's ready.",
           }),
-        onError: () => toast.error("PDF oluşturulamadı"),
+        onError: () => toast.error("Failed to generate PDF"),
       },
     );
   };
 
   const handleDownloadPdf = () => {
     downloadPdf.mutate(invoiceId, {
-      onError: () => toast.error("PDF henüz hazır değil"),
+      onError: () => toast.error("PDF is not ready yet"),
     });
   };
 
   const handleSendEmail = () => {
     sendEmail.mutate(invoiceId, {
-      onSuccess: () => toast.success("E-posta gönderiliyor..."),
-      onError: () => toast.error("E-posta gönderilemedi"),
+      onSuccess: () => toast.success("Sending email..."),
+      onError: () => toast.error("Failed to send email"),
     });
   };
 
@@ -207,8 +207,8 @@ export default function InvoiceDetailPage() {
                   { id: invoiceId, data: { status: "sent" } },
                   {
                     onSuccess: () =>
-                      toast.success("Fatura gönderildi olarak işaretlendi"),
-                    onError: () => toast.error("Durum güncellenemedi"),
+                      toast.success("Invoice marked as sent"),
+                    onError: () => toast.error("Failed to update status"),
                   },
                 )
               }
@@ -219,7 +219,7 @@ export default function InvoiceDetailPage() {
               ) : (
                 <Send className="mr-2 h-4 w-4" />
               )}
-              Gönderildi Olarak İşaretle
+              Mark as Sent
             </Button>
           )}
           {invoice.pdf_status !== "generated" && invoice.status !== "draft" && (
@@ -236,7 +236,7 @@ export default function InvoiceDetailPage() {
               ) : (
                 <FileText className="mr-2 h-4 w-4" />
               )}
-              PDF Oluştur
+              Generate PDF
             </Button>
           )}
           {invoice.pdf_status === "generated" && (
@@ -248,7 +248,7 @@ export default function InvoiceDetailPage() {
                 disabled={downloadPdf.isPending}
               >
                 <Download className="mr-2 h-4 w-4" />
-                PDF İndir
+                Download PDF
               </Button>
               <Button
                 variant="outline"
@@ -258,14 +258,14 @@ export default function InvoiceDetailPage() {
                     { id: invoiceId, force: true },
                     {
                       onSuccess: () =>
-                        toast.info("PDF yeniden oluşturuluyor..."),
+                        toast.info("Regenerating PDF..."),
                     },
                   )
                 }
                 disabled={generatePdf.isPending}
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Yeniden Oluştur
+                Regenerate
               </Button>
               <Button
                 variant="outline"
@@ -278,7 +278,7 @@ export default function InvoiceDetailPage() {
                 ) : (
                   <Mail className="mr-2 h-4 w-4" />
                 )}
-                E-posta Gönder
+                Send Email
               </Button>
             </>
           )}
@@ -287,7 +287,7 @@ export default function InvoiceDetailPage() {
             invoice.status !== "draft" && (
               <Button size="sm" onClick={() => setPaymentDialogOpen(true)}>
                 <CreditCard className="mr-2 h-4 w-4" />
-                Ödeme Kaydet
+                Record Payment
               </Button>
             )}
         </div>
@@ -298,24 +298,24 @@ export default function InvoiceDetailPage() {
         {/* Info Card */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">Fatura Bilgileri</CardTitle>
+            <CardTitle className="text-lg">Invoice Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               <div>
-                <p className="text-muted-foreground">Düzenleme Tarihi</p>
+                <p className="text-muted-foreground">Issue Date</p>
                 <p className="font-medium">{formatDate(invoice.issue_date)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Vade Tarihi</p>
+                <p className="text-muted-foreground">Due Date</p>
                 <p className="font-medium">{formatDate(invoice.due_date)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Para Birimi</p>
+                <p className="text-muted-foreground">Currency</p>
                 <p className="font-medium">{invoice.currency}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">PDF Durumu</p>
+                <p className="text-muted-foreground">PDF Status</p>
                 <Badge variant={pdfBadge.variant} className="mt-0.5">
                   {pdfBadge.label}
                 </Badge>
@@ -328,13 +328,13 @@ export default function InvoiceDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   {invoice.notes && (
                     <div>
-                      <p className="text-muted-foreground mb-1">Notlar</p>
+                      <p className="text-muted-foreground mb-1">Notes</p>
                       <p className="whitespace-pre-wrap">{invoice.notes}</p>
                     </div>
                   )}
                   {invoice.terms && (
                     <div>
-                      <p className="text-muted-foreground mb-1">Koşullar</p>
+                      <p className="text-muted-foreground mb-1">Terms</p>
                       <p className="whitespace-pre-wrap">{invoice.terms}</p>
                     </div>
                   )}
@@ -347,30 +347,30 @@ export default function InvoiceDetailPage() {
         {/* Summary Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Özet</CardTitle>
+            <CardTitle className="text-lg">Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Ara Toplam</span>
+              <span className="text-muted-foreground">Subtotal</span>
               <span>
                 {formatCurrency(Number(invoice.subtotal), invoice.currency)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Vergi</span>
+              <span className="text-muted-foreground">Tax</span>
               <span>
                 {formatCurrency(Number(invoice.tax), invoice.currency)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">İndirim</span>
+              <span className="text-muted-foreground">Discount</span>
               <span>
                 -{formatCurrency(Number(invoice.discount), invoice.currency)}
               </span>
             </div>
             <Separator />
             <div className="flex justify-between font-bold text-base">
-              <span>Genel Toplam</span>
+              <span>Total</span>
               <span>
                 {formatCurrency(Number(invoice.total), invoice.currency)}
               </span>
@@ -378,11 +378,11 @@ export default function InvoiceDetailPage() {
             {totalPaid > 0 && (
               <>
                 <div className="flex justify-between text-green-600">
-                  <span>Ödenen</span>
+                  <span>Paid</span>
                   <span>{formatCurrency(totalPaid, invoice.currency)}</span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span>Kalan</span>
+                  <span>Remaining</span>
                   <span>
                     {formatCurrency(remainingBalance, invoice.currency)}
                   </span>
@@ -397,9 +397,9 @@ export default function InvoiceDetailPage() {
       {invoice.invoice_items && invoice.invoice_items.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Fatura Kalemleri</CardTitle>
+            <CardTitle className="text-lg">Invoice Items</CardTitle>
             <CardDescription>
-              {invoice.invoice_items.length} kalem
+              {invoice.invoice_items.length} {invoice.invoice_items.length === 1 ? "item" : "items"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -407,10 +407,10 @@ export default function InvoiceDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Açıklama</TableHead>
-                    <TableHead className="text-right">Miktar</TableHead>
-                    <TableHead className="text-right">Birim Fiyat</TableHead>
-                    <TableHead className="text-right">Tutar</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -439,9 +439,9 @@ export default function InvoiceDetailPage() {
       {invoice.payments && invoice.payments.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Ödeme Geçmişi</CardTitle>
+            <CardTitle className="text-lg">Payment History</CardTitle>
             <CardDescription>
-              {invoice.payments.length} ödeme kaydı
+              {invoice.payments.length} {invoice.payments.length === 1 ? "payment" : "payments"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -449,10 +449,10 @@ export default function InvoiceDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Yöntem</TableHead>
-                    <TableHead>Referans No</TableHead>
-                    <TableHead className="text-right">Tutar</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Reference #</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

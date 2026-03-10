@@ -123,22 +123,22 @@ export function InvoiceFormDialog({
         },
         {
           onSuccess: () => {
-            toast.success("Fatura güncellendi");
+            toast.success("Invoice updated");
             onOpenChange(false);
           },
           onError: () => {
-            toast.error("Fatura güncellenirken bir hata oluştu");
+            toast.error("Failed to update invoice");
           },
         },
       );
     } else {
       createInvoice.mutate(data, {
         onSuccess: () => {
-          toast.success("Fatura oluşturuldu");
+          toast.success("Invoice created");
           onOpenChange(false);
         },
         onError: () => {
-          toast.error("Fatura oluşturulurken bir hata oluştu");
+          toast.error("Failed to create invoice");
         },
       });
     }
@@ -151,19 +151,19 @@ export function InvoiceFormDialog({
       <DialogContent className="sm:max-w-[680px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Faturayı Düzenle" : "Yeni Fatura"}
+            {isEditing ? "Edit Invoice" : "New Invoice"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Fatura bilgilerini güncelleyin."
-              : "Yeni bir fatura oluşturun."}
+              ? "Update the invoice's information."
+              : "Create a new invoice."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Client Selection */}
           <div className="space-y-2">
-            <Label>Müşteri *</Label>
+            <Label>Client *</Label>
             <Controller
               control={control}
               name="clientId"
@@ -174,7 +174,7 @@ export function InvoiceFormDialog({
                   disabled={isEditing}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Müşteri seçin" />
+                    <SelectValue placeholder="Select client" />
                   </SelectTrigger>
                   <SelectContent>
                     {clientsData?.clients?.map(
@@ -198,7 +198,7 @@ export function InvoiceFormDialog({
           {/* Dates */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Düzenleme Tarihi *</Label>
+              <Label>Issue Date *</Label>
               <Input type="date" {...register("issueDate")} />
               {errors.issueDate && (
                 <p className="text-sm text-destructive">
@@ -207,7 +207,7 @@ export function InvoiceFormDialog({
               )}
             </div>
             <div className="space-y-2">
-              <Label>Vade Tarihi *</Label>
+              <Label>Due Date *</Label>
               <Input type="date" {...register("dueDate")} />
               {errors.dueDate && (
                 <p className="text-sm text-destructive">
@@ -219,7 +219,7 @@ export function InvoiceFormDialog({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Kalemler</Label>
+              <Label>Items</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -229,14 +229,14 @@ export function InvoiceFormDialog({
                 }
               >
                 <Plus className="mr-1 h-3 w-3" />
-                Kalem Ekle
+                Add Item
               </Button>
             </div>
             {/* Column headers */}
             <div className="grid grid-cols-[1fr_80px_100px_36px] gap-2 text-xs text-muted-foreground font-medium">
-              <span>Açıklama</span>
-              <span>Miktar</span>
-              <span>Birim Fiyat</span>
+              <span>Description</span>
+              <span>Qty</span>
+              <span>Rate</span>
               <span />
             </div>
             {fields.map((field, index) => (
@@ -246,7 +246,7 @@ export function InvoiceFormDialog({
               >
                 <div>
                   <Input
-                    placeholder="ör. Web Tasarım Hizmeti"
+                    placeholder="e.g. Web Design Service"
                     {...register(`items.${index}.description`)}
                   />
                   {errors.items?.[index]?.description && (
@@ -258,7 +258,7 @@ export function InvoiceFormDialog({
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="ör. 10"
+                  placeholder="e.g. 10"
                   {...register(`items.${index}.quantity`, {
                     valueAsNumber: true,
                   })}
@@ -266,7 +266,7 @@ export function InvoiceFormDialog({
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="ör. 500"
+                  placeholder="e.g. 500"
                   {...register(`items.${index}.rate`, {
                     valueAsNumber: true,
                   })}
@@ -291,7 +291,7 @@ export function InvoiceFormDialog({
           {/* Tax & Discount */}
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Vergi (%)</Label>
+              <Label>Tax (%)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -299,7 +299,7 @@ export function InvoiceFormDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>İndirim (%)</Label>
+              <Label>Discount (%)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -307,7 +307,7 @@ export function InvoiceFormDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Para Birimi</Label>
+              <Label>Currency</Label>
               <Controller
                 control={control}
                 name="currency"
@@ -331,17 +331,17 @@ export function InvoiceFormDialog({
           {/* Notes & Terms */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Notlar</Label>
+              <Label>Notes</Label>
               <Textarea
-                placeholder="Fatura notları..."
+                placeholder="Invoice notes..."
                 {...register("notes")}
                 rows={3}
               />
             </div>
             <div className="space-y-2">
-              <Label>Koşullar</Label>
+              <Label>Terms</Label>
               <Textarea
-                placeholder="Ödeme koşulları..."
+                placeholder="Payment terms..."
                 {...register("terms")}
                 rows={3}
               />
@@ -354,11 +354,11 @@ export function InvoiceFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              İptal
+              Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditing ? "Güncelle" : "Oluştur"}
+              {isEditing ? "Save Changes" : "Create"}
             </Button>
           </DialogFooter>
         </form>

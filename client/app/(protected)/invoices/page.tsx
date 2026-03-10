@@ -65,11 +65,11 @@ import { toast } from "sonner";
 
 function getStatusLabel(status: string) {
   const map: Record<string, string> = {
-    draft: "Taslak",
-    sent: "Gönderildi",
-    paid: "Ödendi",
-    overdue: "Vadesi Geçti",
-    cancelled: "İptal",
+    draft: "Draft",
+    sent: "Sent",
+    paid: "Paid",
+    overdue: "Overdue",
+    cancelled: "Cancelled",
   };
   return map[status] || status;
 }
@@ -93,15 +93,15 @@ function getStatusVariant(
 function getPdfStatusLabel(status: string) {
   const map: Record<string, string> = {
     not_generated: "—",
-    processing: "İşleniyor...",
-    generated: "Hazır",
-    failed: "Başarısız",
+    processing: "Processing...",
+    generated: "Ready",
+    failed: "Failed",
   };
   return map[status] || status;
 }
 
 function formatCurrency(amount: number, currency = "USD") {
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
   }).format(Number(amount));
@@ -109,7 +109,7 @@ function formatCurrency(amount: number, currency = "USD") {
 
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return "—";
-  return new Intl.DateTimeFormat("tr-TR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -140,8 +140,8 @@ export default function InvoicesPage() {
     updateInvoice.mutate(
       { id, data: { status: "sent" } },
       {
-        onSuccess: () => toast.success("Fatura gönderildi olarak işaretlendi"),
-        onError: () => toast.error("Durum güncellenemedi"),
+        onSuccess: () => toast.success("Invoice marked as sent"),
+        onError: () => toast.error("Failed to update status"),
       },
     );
   };
@@ -169,10 +169,10 @@ export default function InvoicesPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Bu faturayı silmek istediğinize emin misiniz?")) {
+    if (confirm("Are you sure you want to delete this invoice?")) {
       deleteInvoice.mutate(id, {
-        onSuccess: () => toast.success("Fatura silindi"),
-        onError: () => toast.error("Fatura silinemedi"),
+        onSuccess: () => toast.success("Invoice deleted"),
+        onError: () => toast.error("Failed to delete invoice"),
       });
     }
   };
@@ -182,24 +182,24 @@ export default function InvoicesPage() {
       { id },
       {
         onSuccess: () =>
-          toast.info("PDF oluşturuluyor...", {
-            description: "Hazır olduğunda bildirim alacaksınız.",
+          toast.info("Generating PDF...", {
+            description: "You will be notified when it's ready.",
           }),
-        onError: () => toast.error("PDF oluşturulamadı"),
+        onError: () => toast.error("Failed to generate PDF"),
       },
     );
   };
 
   const handleDownloadPdf = (id: string) => {
     downloadPdf.mutate(id, {
-      onError: () => toast.error("PDF henüz hazır değil"),
+      onError: () => toast.error("PDF is not ready yet"),
     });
   };
 
   const handleSendEmail = (id: string) => {
     sendEmail.mutate(id, {
-      onSuccess: () => toast.success("E-posta gönderiliyor..."),
-      onError: () => toast.error("E-posta gönderilemedi"),
+      onSuccess: () => toast.success("Sending email..."),
+      onError: () => toast.error("Failed to send email"),
     });
   };
 
@@ -213,44 +213,44 @@ export default function InvoicesPage() {
               <FileText className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Faturalar</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
               <p className="text-sm text-muted-foreground">
-                Faturalarınızı yönetin
+                Manage your invoices
               </p>
             </div>
           </div>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Yeni Fatura
+            New Invoice
           </Button>
         </div>
 
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {[
+            [
               {
-                label: "Toplam",
+                label: "Total",
                 value: stats.total_invoiced,
                 color: "text-foreground",
               },
               {
-                label: "Ödenen",
+                label: "Paid",
                 value: stats.total_paid,
                 color: "text-green-600",
               },
               {
-                label: "Bekleyen",
+                label: "Pending",
                 value: stats.total_pending,
                 color: "text-blue-600",
               },
               {
-                label: "Vadesi Geçen",
+                label: "Overdue",
                 value: stats.total_overdue,
                 color: "text-red-600",
               },
               {
-                label: "Taslak",
+                label: "Draft",
                 value: stats.total_draft,
                 color: "text-muted-foreground",
               },
@@ -278,15 +278,15 @@ export default function InvoicesPage() {
                 onValueChange={handleStatusFilter}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Durum" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tüm Durumlar</SelectItem>
-                  <SelectItem value="draft">Taslak</SelectItem>
-                  <SelectItem value="sent">Gönderildi</SelectItem>
-                  <SelectItem value="paid">Ödendi</SelectItem>
-                  <SelectItem value="overdue">Vadesi Geçti</SelectItem>
-                  <SelectItem value="cancelled">İptal</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -300,13 +300,13 @@ export default function InvoicesPage() {
               >
                 <SelectTrigger className="w-[200px]">
                   <ArrowUpDown className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Sıralama" />
+                  <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="created_at">Oluşturma Tarihi</SelectItem>
-                  <SelectItem value="issue_date">Düzenleme Tarihi</SelectItem>
-                  <SelectItem value="due_date">Vade Tarihi</SelectItem>
-                  <SelectItem value="total">Tutar</SelectItem>
+                  <SelectItem value="created_at">Date Created</SelectItem>
+                  <SelectItem value="issue_date">Issue Date</SelectItem>
+                  <SelectItem value="due_date">Due Date</SelectItem>
+                  <SelectItem value="total">Amount</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -316,11 +316,11 @@ export default function InvoicesPage() {
         {/* Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Fatura Listesi</CardTitle>
+            <CardTitle>Invoice List</CardTitle>
             <CardDescription>
               {data
-                ? `Toplam ${data.meta.total} fatura bulundu`
-                : "Yükleniyor..."}
+                ? `${data.meta.total} ${data.meta.total === 1 ? "invoice" : "invoices"} found`
+                : "Loading..."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -332,17 +332,17 @@ export default function InvoicesPage() {
               </div>
             ) : error ? (
               <div className="text-center py-10 text-destructive">
-                Faturalar yüklenirken bir hata oluştu.
+                Failed to load invoices.
               </div>
             ) : data?.data.length === 0 ? (
               <div className="text-center py-16 space-y-3">
                 <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
                 <div>
                   <p className="font-medium text-muted-foreground">
-                    Henüz fatura yok
+                    No invoices yet
                   </p>
                   <p className="text-sm text-muted-foreground/70">
-                    İlk faturanızı ekleyerek başlayın.
+                    Add your first invoice to get started.
                   </p>
                 </div>
                 <Button
@@ -351,7 +351,7 @@ export default function InvoicesPage() {
                   className="mt-2"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Fatura Ekle
+                  Add Invoice
                 </Button>
               </div>
             ) : (
@@ -360,16 +360,16 @@ export default function InvoicesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Fatura No</TableHead>
+                        <TableHead>Invoice #</TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Müşteri
+                          Client
                         </TableHead>
                         <TableHead
                           className="cursor-pointer hover:text-foreground transition-colors"
                           onClick={() => handleSort("issue_date")}
                         >
                           <span className="flex items-center gap-1">
-                            Tarih
+                            Date
                             <ArrowUpDown className="h-3 w-3" />
                           </span>
                         </TableHead>
@@ -378,7 +378,7 @@ export default function InvoicesPage() {
                           onClick={() => handleSort("due_date")}
                         >
                           <span className="flex items-center gap-1">
-                            Vade
+                            Due
                             <ArrowUpDown className="h-3 w-3" />
                           </span>
                         </TableHead>
@@ -387,11 +387,11 @@ export default function InvoicesPage() {
                           onClick={() => handleSort("total")}
                         >
                           <span className="flex items-center gap-1">
-                            Tutar
+                            Amount
                             <ArrowUpDown className="h-3 w-3" />
                           </span>
                         </TableHead>
-                        <TableHead>Durum</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead className="hidden lg:table-cell">
                           PDF
                         </TableHead>
@@ -460,7 +460,7 @@ export default function InvoicesPage() {
                                   }}
                                 >
                                   <Pencil className="mr-2 h-4 w-4" />
-                                  Detaylar
+                                  Details
                                 </DropdownMenuItem>
                                 {invoice.status === "draft" && (
                                   <DropdownMenuItem
@@ -470,7 +470,7 @@ export default function InvoicesPage() {
                                     }}
                                   >
                                     <Send className="mr-2 h-4 w-4" />
-                                    Gönderildi Olarak İşaretle
+                                    Mark as Sent
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuSeparator />
@@ -482,7 +482,7 @@ export default function InvoicesPage() {
                                     }}
                                   >
                                     <FileText className="mr-2 h-4 w-4" />
-                                    PDF Oluştur
+                                    Generate PDF
                                   </DropdownMenuItem>
                                 )}
                                 {invoice.pdf_status === "generated" && (
@@ -493,7 +493,7 @@ export default function InvoicesPage() {
                                     }}
                                   >
                                     <Download className="mr-2 h-4 w-4" />
-                                    PDF İndir
+                                    Download PDF
                                   </DropdownMenuItem>
                                 )}
                                 {invoice.pdf_status === "generated" && (
@@ -504,7 +504,7 @@ export default function InvoicesPage() {
                                     }}
                                   >
                                     <Mail className="mr-2 h-4 w-4" />
-                                    E-posta Gönder
+                                    Send Email
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuSeparator />
@@ -517,7 +517,7 @@ export default function InvoicesPage() {
                                     }}
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Sil
+                                    Delete
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuContent>
@@ -533,7 +533,7 @@ export default function InvoicesPage() {
                 {data && data.meta.totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4">
                     <p className="text-sm text-muted-foreground">
-                      Sayfa {data.meta.page} / {data.meta.totalPages}
+                      Page {data.meta.page} of {data.meta.totalPages}
                     </p>
                     <div className="flex items-center gap-2">
                       <Button
@@ -543,7 +543,7 @@ export default function InvoicesPage() {
                         onClick={() => handlePageChange(data.meta.page - 1)}
                       >
                         <ChevronLeft className="h-4 w-4" />
-                        Önceki
+                        Previous
                       </Button>
                       <Button
                         variant="outline"
@@ -551,7 +551,7 @@ export default function InvoicesPage() {
                         disabled={data.meta.page >= data.meta.totalPages}
                         onClick={() => handlePageChange(data.meta.page + 1)}
                       >
-                        Sonraki
+                        Next
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -571,7 +571,7 @@ export default function InvoicesPage() {
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Siliniyor...</span>
+            <span>Deleting...</span>
           </div>
         </div>
       )}

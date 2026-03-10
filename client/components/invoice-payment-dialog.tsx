@@ -81,11 +81,11 @@ export function InvoicePaymentDialog({
       { id: invoiceId, data: cleanData },
       {
         onSuccess: () => {
-          toast.success("Ödeme kaydedildi");
+          toast.success("Payment recorded");
           onOpenChange(false);
         },
         onError: () => {
-          toast.error("Ödeme kaydedilirken bir hata oluştu");
+          toast.error("Failed to record payment");
         },
       },
     );
@@ -95,13 +95,13 @@ export function InvoicePaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>Ödeme Kaydet</DialogTitle>
+          <DialogTitle>Record Payment</DialogTitle>
           <DialogDescription>
-            Bu fatura için ödeme bilgilerini girin.
+            Enter payment details for this invoice.
             {remainingBalance !== undefined && (
               <span className="block mt-1 font-medium">
-                Kalan bakiye:{" "}
-                {new Intl.NumberFormat("tr-TR", {
+                Remaining balance:{" "}
+                {new Intl.NumberFormat("en-US", {
                   style: "currency",
                   currency,
                 }).format(remainingBalance)}
@@ -113,15 +113,15 @@ export function InvoicePaymentDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Ödeme Tarihi</Label>
+              <Label>Payment Date</Label>
               <Input type="date" {...register("paidAt")} />
             </div>
             <div className="space-y-2">
-              <Label>Tutar</Label>
+              <Label>Amount</Label>
               <Input
                 type="number"
                 step="0.01"
-                placeholder="Tam ödeme"
+                placeholder="Full payment"
                 {...register("amount", { valueAsNumber: true })}
               />
               {errors.amount && (
@@ -134,25 +134,25 @@ export function InvoicePaymentDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Ödeme Yöntemi</Label>
+              <Label>Payment Method</Label>
               <Input
-                placeholder="Banka transferi, kredi kartı..."
+                placeholder="Bank transfer, credit card..."
                 {...register("paymentMethod")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Referans No</Label>
+              <Label>Reference #</Label>
               <Input
-                placeholder="İşlem referans numarası"
+                placeholder="Transaction reference number"
                 {...register("referenceNumber")}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Not</Label>
+            <Label>Note</Label>
             <Textarea
-              placeholder="Ödeme notu..."
+              placeholder="Payment note..."
               {...register("notes")}
               rows={2}
             />
@@ -164,13 +164,13 @@ export function InvoicePaymentDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              İptal
+              Cancel
             </Button>
             <Button type="submit" disabled={markAsPaid.isPending}>
               {markAsPaid.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Ödemeyi Kaydet
+              Save Payment
             </Button>
           </DialogFooter>
         </form>
