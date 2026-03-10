@@ -100,36 +100,36 @@ export function TaskFormDialog({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Görevi Düzenle" : "Yeni Görev"}
+            {isEditing ? "Edit Task" : "New Task"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Görev bilgilerini güncelleyin."
-              : "Projeye yeni bir görev ekleyin."}
+              ? "Update the task's information."
+              : "Add a new task to the project."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="task-title">Başlık *</Label>
+            <Label htmlFor="task-title">Title *</Label>
             <Input
               id="task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Görev başlığı"
+              placeholder="Task title"
               required
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="task-desc">Açıklama</Label>
+            <Label htmlFor="task-desc">Description</Label>
             <Textarea
               id="task-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Görev açıklaması (opsiyonel)"
+              placeholder="Task description (optional)"
               rows={3}
             />
           </div>
@@ -137,7 +137,7 @@ export function TaskFormDialog({
           {/* Status & Priority */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Durum</Label>
+              <Label>Status</Label>
               <Select
                 value={status}
                 onValueChange={(v) =>
@@ -148,14 +148,14 @@ export function TaskFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">Yapılacak</SelectItem>
-                  <SelectItem value="in_progress">Devam Ediyor</SelectItem>
-                  <SelectItem value="done">Tamamlandı</SelectItem>
+                  <SelectItem value="todo">To Do</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="done">Done</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Öncelik</Label>
+              <Label>Priority</Label>
               <Select
                 value={priority}
                 onValueChange={(v) =>
@@ -166,9 +166,9 @@ export function TaskFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Düşük</SelectItem>
-                  <SelectItem value="medium">Orta</SelectItem>
-                  <SelectItem value="high">Yüksek</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -177,7 +177,7 @@ export function TaskFormDialog({
           {/* Due Date & Estimated Hours */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="task-due">Son Tarih</Label>
+              <Label htmlFor="task-due">Due Date</Label>
               <Input
                 id="task-due"
                 type="date"
@@ -186,7 +186,7 @@ export function TaskFormDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-hours">Tahmini Süre (saat)</Label>
+              <Label htmlFor="task-hours">Estimated Hours</Label>
               <Input
                 id="task-hours"
                 type="number"
@@ -194,7 +194,7 @@ export function TaskFormDialog({
                 step="0.5"
                 value={estimatedHours}
                 onChange={(e) => setEstimatedHours(e.target.value)}
-                placeholder="örn. 4"
+                placeholder="e.g. 4"
               />
             </div>
           </div>
@@ -206,11 +206,11 @@ export function TaskFormDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              İptal
+              Cancel
             </Button>
             <Button type="submit" disabled={isPending || !title.trim()}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditing ? "Güncelle" : "Oluştur"}
+              {isEditing ? "Save Changes" : "Create"}
             </Button>
           </DialogFooter>
         </form>

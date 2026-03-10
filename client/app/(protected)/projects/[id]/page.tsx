@@ -74,10 +74,10 @@ type KanbanTaskItem = Task & KanbanItem;
 // Status helpers
 function getStatusLabel(status: string) {
   const map: Record<string, string> = {
-    active: "Aktif",
-    completed: "Tamamlandı",
-    on_hold: "Beklemede",
-    cancelled: "İptal Edildi",
+    active: "Active",
+    completed: "Completed",
+    on_hold: "On Hold",
+    cancelled: "Cancelled",
   };
   return map[status] || status;
 }
@@ -97,9 +97,9 @@ function getStatusVariant(status: string) {
 
 function getTaskStatusLabel(status: string) {
   const map: Record<string, string> = {
-    todo: "Yapılacak",
-    in_progress: "Devam Ediyor",
-    done: "Tamamlandı",
+    todo: "To Do",
+    in_progress: "In Progress",
+    done: "Done",
   };
   return map[status] || status;
 }
@@ -118,9 +118,9 @@ function getTaskStatusVariant(status: string) {
 
 function getPriorityLabel(priority: string) {
   const map: Record<string, string> = {
-    low: "Düşük",
-    medium: "Orta",
-    high: "Yüksek",
+    low: "Low",
+    medium: "Medium",
+    high: "High",
   };
   return map[priority] || priority;
 }
@@ -139,15 +139,15 @@ function getPriorityVariant(priority: string) {
 
 function formatCurrency(amount: number | null | undefined) {
   if (amount == null) return "—";
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "TRY",
+    currency: "USD",
   }).format(Number(amount));
 }
 
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return "—";
-  return new Intl.DateTimeFormat("tr-TR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -158,9 +158,9 @@ function formatDuration(minutes: number | null | undefined) {
   if (minutes == null || minutes === 0) return "—";
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  if (hours === 0) return `${mins}dk`;
-  if (mins === 0) return `${hours}sa`;
-  return `${hours}sa ${mins}dk`;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
 }
 
 export default function ProjectDetailPage() {
@@ -187,10 +187,10 @@ export default function ProjectDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-destructive font-medium">Proje bulunamadı</p>
+          <p className="text-destructive font-medium">Project not found</p>
           <Button variant="outline" onClick={() => router.push("/projects")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Projelere Dön
+            Back to Projects
           </Button>
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function ProjectDetailPage() {
           </div>
           <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Düzenle
+            Edit
           </Button>
         </div>
 
@@ -246,19 +246,19 @@ export default function ProjectDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <FolderOpen className="h-5 w-5" />
-              Proje Bilgileri
+              Project Details
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <InfoItem
                 icon={<DollarSign className="h-4 w-4" />}
-                label="Bütçe"
+                label="Budget"
                 value={formatCurrency(project.budget)}
               />
               <InfoItem
                 icon={<Clock className="h-4 w-4" />}
-                label="Saatlik Ücret"
+                label="Hourly Rate"
                 value={
                   project.hourly_rate
                     ? formatCurrency(project.hourly_rate)
@@ -267,25 +267,25 @@ export default function ProjectDetailPage() {
               />
               <InfoItem
                 icon={<Calendar className="h-4 w-4" />}
-                label="Başlangıç Tarihi"
+                label="Start Date"
                 value={formatDate(project.start_date)}
               />
               <InfoItem
                 icon={<Calendar className="h-4 w-4" />}
-                label="Son Tarih"
+                label="Deadline"
                 value={formatDate(project.deadline)}
               />
               <InfoItem
                 icon={<TrendingUp className="h-4 w-4" />}
-                label="Toplam Faturalanan"
+                label="Total Billed"
                 value={formatCurrency(project.total_billed)}
               />
               <InfoItem
                 icon={<Timer className="h-4 w-4" />}
-                label="Toplam Takip Edilen Saat"
+                label="Total Tracked Hours"
                 value={
                   project.total_tracked_hours
-                    ? `${Number(project.total_tracked_hours).toFixed(1)} saat`
+                    ? `${Number(project.total_tracked_hours).toFixed(1)} hrs`
                     : null
                 }
               />
@@ -293,7 +293,7 @@ export default function ProjectDetailPage() {
                 <div className="sm:col-span-2 lg:col-span-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <FolderOpen className="h-4 w-4" />
-                    Açıklama
+                    Description
                   </div>
                   <p className="text-sm">{project.description}</p>
                 </div>
@@ -307,18 +307,18 @@ export default function ProjectDetailPage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="tasks" className="flex items-center gap-2">
               <ListTodo className="h-4 w-4" />
-              Görevler
+              Tasks
             </TabsTrigger>
             <TabsTrigger
               value="time-entries"
               className="flex items-center gap-2"
             >
               <Timer className="h-4 w-4" />
-              Zaman Kayıtları
+              Time Entries
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              İstatistikler
+              Statistics
             </TabsTrigger>
           </TabsList>
 
@@ -373,9 +373,9 @@ function TasksTab({ projectId }: { projectId: string }) {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const columns: KanbanColumn[] = [
-    { id: "todo", name: "Yapılacak", color: "#6B7280" },
-    { id: "in_progress", name: "Devam Ediyor", color: "#F59E0B" },
-    { id: "done", name: "Tamamlandı", color: "#10B981" },
+    { id: "todo", name: "To Do", color: "#6B7280" },
+    { id: "in_progress", name: "In Progress", color: "#F59E0B" },
+    { id: "done", name: "Done", color: "#10B981" },
   ];
 
   // Map tasks to kanban items
@@ -411,7 +411,7 @@ function TasksTab({ projectId }: { projectId: string }) {
   };
 
   const handleDelete = (taskId: string) => {
-    if (confirm("Bu görevi silmek istediğinize emin misiniz?")) {
+    if (confirm("Are you sure you want to delete this task?")) {
       deleteTask.mutate(taskId);
     }
   };
@@ -441,14 +441,14 @@ function TasksTab({ projectId }: { projectId: string }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ListTodo className="h-5 w-5" />
-          <h3 className="font-semibold">Görevler</h3>
+          <h3 className="font-semibold">Tasks</h3>
           <span className="text-sm text-muted-foreground">
-            ({items.length} görev)
+            ({items.length} {items.length === 1 ? "task" : "tasks"})
           </span>
         </div>
         <Button size="sm" onClick={() => setTaskDialogOpen(true)}>
           <Plus className="mr-1 h-4 w-4" />
-          Görev Ekle
+          Add Task
         </Button>
       </div>
 
@@ -504,7 +504,7 @@ function TasksTab({ projectId }: { projectId: string }) {
                               }}
                             >
                               <Pencil className="mr-2 h-3.5 w-3.5" />
-                              Düzenle
+                              Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
@@ -514,7 +514,7 @@ function TasksTab({ projectId }: { projectId: string }) {
                               }}
                             >
                               <Trash2 className="mr-2 h-3.5 w-3.5" />
-                              Sil
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -542,7 +542,7 @@ function TasksTab({ projectId }: { projectId: string }) {
                         {item.estimated_hours && (
                           <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            {item.estimated_hours}sa
+                            {item.estimated_hours}h
                           </span>
                         )}
                       </div>
@@ -568,7 +568,7 @@ function TasksTab({ projectId }: { projectId: string }) {
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Siliniyor...</span>
+            <span>Deleting...</span>
           </div>
         </div>
       )}
@@ -601,7 +601,7 @@ function TimeEntriesTab({ projectId }: { projectId: string }) {
           <div className="text-center py-12 space-y-2">
             <Timer className="mx-auto h-10 w-10 text-muted-foreground/50" />
             <p className="text-muted-foreground">
-              Bu projeye ait zaman kaydı bulunmuyor.
+              No time entries for this project.
             </p>
           </div>
         </CardContent>
@@ -612,23 +612,23 @@ function TimeEntriesTab({ projectId }: { projectId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Zaman Kayıtları</CardTitle>
-        <CardDescription>{entries.length} kayıt bulundu</CardDescription>
+        <CardTitle className="text-lg">Time Entries</CardTitle>
+        <CardDescription>{entries.length} {entries.length === 1 ? "entry" : "entries"} found</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tarih</TableHead>
-                <TableHead>Açıklama</TableHead>
-                <TableHead className="hidden md:table-cell">Görev</TableHead>
-                <TableHead>Süre</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="hidden md:table-cell">Task</TableHead>
+                <TableHead>Duration</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Faturalanabilir
+                  Billable
                 </TableHead>
                 <TableHead className="hidden lg:table-cell">
-                  Saatlik Ücret
+                  Hourly Rate
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -655,9 +655,9 @@ function TimeEntriesTab({ projectId }: { projectId: string }) {
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {entry.billable ? (
-                      <Badge variant="default">Evet</Badge>
+                      <Badge variant="default">Yes</Badge>
                     ) : (
-                      <Badge variant="outline">Hayır</Badge>
+                      <Badge variant="outline">No</Badge>
                     )}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
@@ -694,7 +694,7 @@ function StatsTab({ projectId }: { projectId: string }) {
           <div className="text-center py-12 space-y-2">
             <TrendingUp className="mx-auto h-10 w-10 text-muted-foreground/50" />
             <p className="text-muted-foreground">
-              İstatistik verisi yüklenemedi.
+              Could not load statistics.
             </p>
           </div>
         </CardContent>
@@ -713,32 +713,32 @@ function StatsTab({ projectId }: { projectId: string }) {
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <ListTodo className="h-5 w-5" />
-            Görev Dağılımı
+            Task Distribution
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">İlerleme</span>
+              <span className="text-muted-foreground">Progress</span>
               <span className="font-medium">
-                {tasksDone}/{tasksTotal} tamamlandı
+                {tasksDone}/{tasksTotal} completed
               </span>
             </div>
             <Progress value={taskProgress} className="h-2" />
             <div className="grid grid-cols-3 gap-4 pt-2">
               <div className="text-center">
                 <p className="text-2xl font-bold">{stats.tasks.todo ?? 0}</p>
-                <p className="text-xs text-muted-foreground">Yapılacak</p>
+                <p className="text-xs text-muted-foreground">To Do</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">
                   {stats.tasks.in_progress ?? 0}
                 </p>
-                <p className="text-xs text-muted-foreground">Devam Eden</p>
+                <p className="text-xs text-muted-foreground">In Progress</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{tasksDone}</p>
-                <p className="text-xs text-muted-foreground">Tamamlanan</p>
+                <p className="text-xs text-muted-foreground">Completed</p>
               </div>
             </div>
           </div>
@@ -748,44 +748,44 @@ function StatsTab({ projectId }: { projectId: string }) {
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title="Toplam Zaman Kaydı"
+          title="Total Time Entries"
           value={stats.time.total_entries.toString()}
-          description="Kayıtlı zaman girişi"
+          description="Recorded time entries"
           icon={<Timer className="h-5 w-5 text-blue-500" />}
         />
         <StatCard
-          title="Toplam Saat"
-          value={`${stats.time.total_hours.toFixed(1)} sa`}
-          description="Takip edilen toplam süre"
+          title="Total Hours"
+          value={`${stats.time.total_hours.toFixed(1)} hrs`}
+          description="Total tracked duration"
           icon={<Clock className="h-5 w-5 text-emerald-500" />}
         />
         <StatCard
-          title="Faturalanabilir Saat"
-          value={`${stats.time.billable_hours.toFixed(1)} sa`}
-          description="Faturalanabilir süre"
+          title="Billable Hours"
+          value={`${stats.time.billable_hours.toFixed(1)} hrs`}
+          description="Billable duration"
           icon={<CheckCircle2 className="h-5 w-5 text-purple-500" />}
         />
         <StatCard
-          title="Toplam Gider"
+          title="Total Expenses"
           value={formatCurrency(stats.expenses.total_amount)}
-          description={`${stats.expenses.total_count} gider kaydı`}
+          description={`${stats.expenses.total_count} expense ${stats.expenses.total_count === 1 ? "record" : "records"}`}
           icon={<Receipt className="h-5 w-5 text-amber-500" />}
         />
         <StatCard
-          title="Toplam Faturalanan"
+          title="Total Billed"
           value={formatCurrency(stats.budget.total_billed)}
-          description="Faturalanan tutar"
+          description="Amount billed"
           icon={<Banknote className="h-5 w-5 text-emerald-500" />}
         />
         {stats.budget.budget != null && (
           <StatCard
-            title="Bütçe Kullanımı"
+            title="Budget Usage"
             value={
               stats.budget.budget_used_percent != null
-                ? `%${stats.budget.budget_used_percent.toFixed(0)}`
+                ? `${stats.budget.budget_used_percent.toFixed(0)}%`
                 : "—"
             }
-            description={`Bütçe: ${formatCurrency(stats.budget.budget)}`}
+            description={`Budget: ${formatCurrency(stats.budget.budget)}`}
             icon={<DollarSign className="h-5 w-5 text-red-500" />}
             highlight={
               stats.budget.budget_used_percent != null &&

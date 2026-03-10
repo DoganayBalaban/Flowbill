@@ -38,10 +38,10 @@ interface ProjectFormDialogProps {
 type FormData = z.infer<typeof createProjectSchema>;
 
 const statusOptions = [
-  { value: "active", label: "Aktif" },
-  { value: "completed", label: "Tamamlandı" },
-  { value: "on_hold", label: "Beklemede" },
-  { value: "cancelled", label: "İptal Edildi" },
+  { value: "active", label: "Active" },
+  { value: "completed", label: "Completed" },
+  { value: "on_hold", label: "On Hold" },
+  { value: "cancelled", label: "Cancelled" },
 ];
 
 export function ProjectFormDialog({
@@ -144,12 +144,12 @@ export function ProjectFormDialog({
       <DialogContent className="sm:max-w-[580px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Projeyi Düzenle" : "Yeni Proje"}
+            {isEditing ? "Edit Project" : "New Project"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Proje bilgilerini güncelleyin."
-              : "Yeni bir proje oluşturun."}
+              ? "Update the project's information."
+              : "Create a new project."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -157,11 +157,11 @@ export function ProjectFormDialog({
             {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">
-                Proje Adı <span className="text-destructive">*</span>
+                Project Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
-                placeholder="Proje adı"
+                placeholder="Project name"
                 {...register("name")}
               />
               {errors.name && (
@@ -173,7 +173,7 @@ export function ProjectFormDialog({
 
             {/* Status */}
             <div className="space-y-2">
-              <Label>Durum</Label>
+              <Label>Status</Label>
               <Controller
                 name="status"
                 control={control}
@@ -183,7 +183,7 @@ export function ProjectFormDialog({
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Durum seçin" />
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
                       {statusOptions.map((opt) => (
@@ -199,7 +199,7 @@ export function ProjectFormDialog({
 
             {/* Client */}
             <div className="space-y-2">
-              <Label>Müşteri</Label>
+              <Label>Client</Label>
               <Controller
                 name="client_id"
                 control={control}
@@ -209,10 +209,10 @@ export function ProjectFormDialog({
                     onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Müşteri seçin" />
+                      <SelectValue placeholder="Select client" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Müşteri Yok</SelectItem>
+                      <SelectItem value="none">No Client</SelectItem>
                       {clients.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.name}
@@ -227,7 +227,7 @@ export function ProjectFormDialog({
 
             {/* Color */}
             <div className="space-y-2">
-              <Label htmlFor="color">Renk</Label>
+              <Label htmlFor="color">Color</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="color"
@@ -250,7 +250,7 @@ export function ProjectFormDialog({
 
             {/* Budget */}
             <div className="space-y-2">
-              <Label htmlFor="budget">Bütçe (₺)</Label>
+              <Label htmlFor="budget">Budget ($)</Label>
               <Input
                 id="budget"
                 type="number"
@@ -267,7 +267,7 @@ export function ProjectFormDialog({
 
             {/* Hourly Rate */}
             <div className="space-y-2">
-              <Label htmlFor="hourly_rate">Saatlik Ücret (₺)</Label>
+              <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
               <Input
                 id="hourly_rate"
                 type="number"
@@ -284,7 +284,7 @@ export function ProjectFormDialog({
 
             {/* Start Date */}
             <div className="space-y-2">
-              <Label htmlFor="start_date">Başlangıç Tarihi</Label>
+              <Label htmlFor="start_date">Start Date</Label>
               <Input
                 id="start_date"
                 type="date"
@@ -294,7 +294,7 @@ export function ProjectFormDialog({
 
             {/* Deadline */}
             <div className="space-y-2">
-              <Label htmlFor="deadline">Son Tarih</Label>
+              <Label htmlFor="deadline">Deadline</Label>
               <Input
                 id="deadline"
                 type="date"
@@ -305,10 +305,10 @@ export function ProjectFormDialog({
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Açıklama</Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              placeholder="Proje hakkında açıklama..."
+              placeholder="Description about this project..."
               rows={3}
               {...register("description")}
             />
@@ -321,11 +321,11 @@ export function ProjectFormDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              İptal
+              Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditing ? "Güncelle" : "Oluştur"}
+              {isEditing ? "Save Changes" : "Create"}
             </Button>
           </DialogFooter>
         </form>
