@@ -113,23 +113,23 @@ export function ClientFormDialog({
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Müşteriyi Düzenle" : "Yeni Müşteri"}
+            {isEditing ? "Edit Client" : "New Client"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Müşteri bilgilerini güncelleyin."
-              : "Yeni bir müşteri ekleyin."}
+              ? "Update the client's information."
+              : "Add a new client to your workspace."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">
-                İsim <span className="text-destructive">*</span>
+                Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
-                placeholder="Müşteri adı"
+                placeholder="Client name"
                 {...register("name")}
               />
               {errors.name && (
@@ -137,19 +137,19 @@ export function ClientFormDialog({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company">Şirket</Label>
+              <Label htmlFor="company">Company</Label>
               <Input
                 id="company"
-                placeholder="Şirket adı"
+                placeholder="Company name"
                 {...register("company")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-posta</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="ornek@email.com"
+                placeholder="client@example.com"
                 {...register("email")}
               />
               {errors.email && (
@@ -159,23 +159,23 @@ export function ClientFormDialog({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefon</Label>
+              <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
-                placeholder="+90 555 123 4567"
+                placeholder="+1 555 123 4567"
                 {...register("phone")}
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="address">Adres</Label>
+              <Label htmlFor="address">Address</Label>
               <Input
                 id="address"
-                placeholder="Adres"
+                placeholder="Address"
                 {...register("address")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="hourly_rate">Saatlik Ücret (₺)</Label>
+              <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
               <Input
                 id="hourly_rate"
                 type="number"
@@ -191,10 +191,10 @@ export function ClientFormDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">Notlar</Label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              placeholder="Müşteri hakkında notlar..."
+              placeholder="Notes about this client..."
               rows={3}
               {...register("notes")}
             />
@@ -206,11 +206,11 @@ export function ClientFormDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              İptal
+              Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditing ? "Güncelle" : "Oluştur"}
+              {isEditing ? "Save Changes" : "Create"}
             </Button>
           </DialogFooter>
         </form>

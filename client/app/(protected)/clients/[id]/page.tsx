@@ -51,10 +51,10 @@ import { useState } from "react";
 
 function getProjectStatusLabel(status: string) {
   const map: Record<string, string> = {
-    active: "Aktif",
-    on_hold: "Beklemede",
-    completed: "Tamamlandı",
-    cancelled: "İptal Edildi",
+    active: "Active",
+    on_hold: "On Hold",
+    completed: "Completed",
+    cancelled: "Cancelled",
   };
   return map[status] || status;
 }
@@ -76,11 +76,11 @@ function getProjectStatusVariant(
 
 function getInvoiceStatusLabel(status: string) {
   const map: Record<string, string> = {
-    draft: "Taslak",
-    sent: "Gönderildi",
-    paid: "Ödendi",
-    overdue: "Gecikmiş",
-    cancelled: "İptal Edildi",
+    draft: "Draft",
+    sent: "Sent",
+    paid: "Paid",
+    overdue: "Overdue",
+    cancelled: "Cancelled",
   };
   return map[status] || status;
 }
@@ -103,15 +103,15 @@ function getInvoiceStatusVariant(
 
 function formatCurrency(amount: number | null | undefined) {
   if (amount == null) return "—";
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "TRY",
+    currency: "USD",
   }).format(Number(amount));
 }
 
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return "—";
-  return new Intl.DateTimeFormat("tr-TR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -122,9 +122,9 @@ function formatDuration(minutes: number | null | undefined) {
   if (!minutes) return "—";
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (h === 0) return `${m}dk`;
-  if (m === 0) return `${h}sa`;
-  return `${h}sa ${m}dk`;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -153,10 +153,10 @@ export default function ClientDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-destructive font-medium">Müşteri bulunamadı</p>
+          <p className="text-destructive font-medium">Client not found</p>
           <Button variant="outline" onClick={() => router.push("/clients")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Müşterilere Dön
+            Back to Clients
           </Button>
         </div>
       </div>
@@ -190,7 +190,7 @@ export default function ClientDetailPage() {
           </div>
           <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Düzenle
+            Edit
           </Button>
         </div>
 
@@ -199,38 +199,38 @@ export default function ClientDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <User className="h-5 w-5" />
-              Müşteri Bilgileri
+              Client Details
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <InfoItem
                 icon={<Mail className="h-4 w-4" />}
-                label="E-posta"
+                label="Email"
                 value={client.email}
               />
               <InfoItem
                 icon={<Phone className="h-4 w-4" />}
-                label="Telefon"
+                label="Phone"
                 value={client.phone}
               />
               <InfoItem
                 icon={<Clock className="h-4 w-4" />}
-                label="Saatlik Ücret"
+                label="Hourly Rate"
                 value={
                   client.hourly_rate ? formatCurrency(client.hourly_rate) : null
                 }
               />
               <InfoItem
                 icon={<MapPin className="h-4 w-4" />}
-                label="Adres"
+                label="Address"
                 value={client.address}
               />
               {client.notes && (
                 <div className="sm:col-span-2 lg:col-span-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <StickyNote className="h-4 w-4" />
-                    Notlar
+                    Notes
                   </div>
                   <p className="text-sm">{client.notes}</p>
                 </div>
@@ -244,26 +244,26 @@ export default function ClientDetailPage() {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="projects" className="flex items-center gap-2">
               <FolderOpen className="h-4 w-4" />
-              Projeler
+              Projects
             </TabsTrigger>
             <TabsTrigger value="invoices" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Faturalar
+              Invoices
             </TabsTrigger>
             <TabsTrigger
               value="time-entries"
               className="flex items-center gap-2"
             >
               <Timer className="h-4 w-4" />
-              Zaman
+              Time
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              İstatistikler
+              Stats
             </TabsTrigger>
             <TabsTrigger value="revenue" className="flex items-center gap-2">
               <Banknote className="h-4 w-4" />
-              Gelir
+              Revenue
             </TabsTrigger>
           </TabsList>
 
@@ -367,7 +367,7 @@ function ProjectsTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12 space-y-2">
           <FolderOpen className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground">
-            Bu müşteriye ait proje bulunmuyor.
+            No projects found for this client.
           </p>
         </CardContent>
       </Card>
@@ -376,22 +376,22 @@ function ProjectsTab({ clientId }: { clientId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Projeler</CardTitle>
-        <CardDescription>{projects.length} proje bulundu</CardDescription>
+        <CardTitle className="text-lg">Projects</CardTitle>
+        <CardDescription>{projects.length} {projects.length === 1 ? "project" : "projects"}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Proje Adı</TableHead>
-                <TableHead>Durum</TableHead>
-                <TableHead className="hidden md:table-cell">Bütçe</TableHead>
+                <TableHead>Project Name</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Budget</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Başlangıç
+                  Start Date
                 </TableHead>
                 <TableHead className="hidden lg:table-cell">
-                  Son Tarih
+                  Deadline
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -444,7 +444,7 @@ function InvoicesTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12 space-y-2">
           <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground">
-            Bu müşteriye ait fatura bulunmuyor.
+            No invoices found for this client.
           </p>
         </CardContent>
       </Card>
@@ -453,22 +453,22 @@ function InvoicesTab({ clientId }: { clientId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Faturalar</CardTitle>
-        <CardDescription>{invoices.length} fatura bulundu</CardDescription>
+        <CardTitle className="text-lg">Invoices</CardTitle>
+        <CardDescription>{invoices.length} {invoices.length === 1 ? "invoice" : "invoices"}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Fatura No</TableHead>
-                <TableHead>Durum</TableHead>
-                <TableHead>Tutar</TableHead>
+                <TableHead>Invoice #</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Amount</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Düzenleme Tarihi
+                  Issue Date
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Vade Tarihi
+                  Due Date
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -523,7 +523,7 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12 space-y-2">
           <Timer className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground">
-            Bu müşteriye ait zaman kaydı bulunmuyor.
+            No time entries found for this client.
           </p>
         </CardContent>
       </Card>
@@ -532,9 +532,9 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Zaman Kayıtları</CardTitle>
+        <CardTitle className="text-lg">Time Entries</CardTitle>
         <CardDescription>
-          {data?.meta.total ?? entries.length} kayıt
+          {data?.meta.total ?? entries.length} {(data?.meta.total ?? entries.length) === 1 ? "entry" : "entries"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -542,12 +542,12 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tarih</TableHead>
-                <TableHead>Açıklama</TableHead>
-                <TableHead className="hidden md:table-cell">Proje</TableHead>
-                <TableHead>Süre</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="hidden md:table-cell">Project</TableHead>
+                <TableHead>Duration</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Faturalanabilir
+                  Billable
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -574,9 +574,9 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {entry.billable ? (
-                      <Badge variant="default">Evet</Badge>
+                      <Badge variant="default">Yes</Badge>
                     ) : (
-                      <Badge variant="outline">Hayır</Badge>
+                      <Badge variant="outline">No</Badge>
                     )}
                   </TableCell>
                 </TableRow>
@@ -607,7 +607,7 @@ function StatsTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12">
           <TrendingUp className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground mt-2">
-            İstatistik verisi yüklenemedi.
+            Failed to load stats.
           </p>
         </CardContent>
       </Card>
@@ -625,30 +625,29 @@ function StatsTab({ clientId }: { clientId: string }) {
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Fatura Durumu
+            Invoice Status
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Tahsilat ilerleme</span>
+            <span className="text-muted-foreground">Collection progress</span>
             <span className="font-medium">
-              {stats.paid_invoice_count}/{stats.total_invoice_count} fatura
-              ödendi
+              {stats.paid_invoice_count}/{stats.total_invoice_count} invoices paid
             </span>
           </div>
           <Progress value={invoicePaidPercent} className="h-2" />
           <div className="grid grid-cols-3 gap-4 pt-2">
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.total_invoice_count}</p>
-              <p className="text-xs text-muted-foreground">Toplam</p>
+              <p className="text-xs text-muted-foreground">Total</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.open_invoice_count}</p>
-              <p className="text-xs text-muted-foreground">Açık</p>
+              <p className="text-xs text-muted-foreground">Open</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.paid_invoice_count}</p>
-              <p className="text-xs text-muted-foreground">Ödendi</p>
+              <p className="text-xs text-muted-foreground">Paid</p>
             </div>
           </div>
         </CardContent>
@@ -657,34 +656,34 @@ function StatsTab({ clientId }: { clientId: string }) {
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title="Toplam Gelir"
+          title="Total Revenue"
           value={formatCurrency(stats.total_revenue)}
-          description="Faturalandırılan tutar"
+          description="Total invoiced amount"
           icon={<TrendingUp className="h-5 w-5 text-emerald-500" />}
         />
         <StatCard
-          title="Tahsil Edilen"
+          title="Collected"
           value={formatCurrency(stats.total_paid)}
-          description="Alınan toplam ödeme"
+          description="Total payments received"
           icon={<Banknote className="h-5 w-5 text-blue-500" />}
         />
         <StatCard
-          title="Bekleyen"
+          title="Outstanding"
           value={formatCurrency(stats.outstanding)}
-          description="Ödenmemiş tutar"
+          description="Unpaid amount"
           icon={<Clock className="h-5 w-5 text-amber-500" />}
           highlight={stats.outstanding > 0}
         />
         <StatCard
-          title="Proje Sayısı"
+          title="Projects"
           value={stats.project_count.toString()}
-          description="Aktif proje"
+          description="Active projects"
           icon={<FolderOpen className="h-5 w-5 text-purple-500" />}
         />
         <StatCard
-          title="Takip Edilen Saat"
-          value={`${stats.total_tracked_hours} sa`}
-          description={`${stats.time_entry_count} zaman kaydı`}
+          title="Hours Tracked"
+          value={`${stats.total_tracked_hours}h`}
+          description={`${stats.time_entry_count} time entries`}
           icon={<Timer className="h-5 w-5 text-indigo-500" />}
         />
       </div>
@@ -711,7 +710,7 @@ function RevenueTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12">
           <TrendingUp className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground mt-2">
-            Gelir verisi yüklenemedi.
+            Failed to load revenue data.
           </p>
         </CardContent>
       </Card>
@@ -720,34 +719,34 @@ function RevenueTab({ clientId }: { clientId: string }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <StatCard
-        title="Toplam Gelir"
+        title="Total Revenue"
         value={formatCurrency(stats.total_revenue)}
-        description="Tüm faturalardan elde edilen gelir"
+        description="Revenue from all invoices"
         icon={<TrendingUp className="h-5 w-5 text-emerald-500" />}
       />
       <StatCard
-        title="Toplam Ödenen"
+        title="Total Collected"
         value={formatCurrency(stats.total_paid)}
-        description="Alınan toplam ödeme"
+        description="Total payments received"
         icon={<Banknote className="h-5 w-5 text-blue-500" />}
       />
       <StatCard
-        title="Bekleyen"
+        title="Outstanding"
         value={formatCurrency(stats.outstanding)}
-        description="Henüz ödenmemiş tutar"
+        description="Unpaid amount"
         icon={<Clock className="h-5 w-5 text-amber-500" />}
         highlight={stats.outstanding > 0}
       />
       <StatCard
-        title="Toplam Fatura"
+        title="Total Invoices"
         value={stats.total_invoice_count.toString()}
-        description="Kesilen fatura sayısı"
+        description="Invoices issued"
         icon={<FileText className="h-5 w-5 text-muted-foreground" />}
       />
       <StatCard
-        title="Ödenen Fatura"
+        title="Paid Invoices"
         value={stats.paid_invoice_count.toString()}
-        description="Ödemesi tamamlanan faturalar"
+        description="Fully paid invoices"
         icon={<FileText className="h-5 w-5 text-emerald-500" />}
       />
     </div>

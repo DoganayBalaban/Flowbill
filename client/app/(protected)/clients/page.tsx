@@ -95,7 +95,7 @@ export default function ClientsPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Bu müşteriyi silmek istediğinize emin misiniz?")) {
+    if (confirm("Are you sure you want to delete this client?")) {
       deleteClient.mutate(id);
     }
   };
@@ -115,15 +115,15 @@ export default function ClientsPage() {
               <Users className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Müşteriler</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Clients</h1>
               <p className="text-sm text-muted-foreground">
-                Müşterilerinizi yönetin
+                Manage your clients
               </p>
             </div>
           </div>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Yeni Müşteri
+            New Client
           </Button>
         </div>
 
@@ -134,7 +134,7 @@ export default function ClientsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="İsim, şirket veya e-posta ile arayın..."
+                  placeholder="Search by name, company or email..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
@@ -143,7 +143,7 @@ export default function ClientsPage() {
               </div>
               <Button variant="secondary" onClick={handleSearch}>
                 <Search className="mr-2 h-4 w-4" />
-                Ara
+                Search
               </Button>
               <Select
                 value={params.sort}
@@ -156,13 +156,13 @@ export default function ClientsPage() {
               >
                 <SelectTrigger className="w-[180px]">
                   <ArrowUpDown className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Sıralama" />
+                  <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="created_at">Oluşturma Tarihi</SelectItem>
-                  <SelectItem value="name">İsim</SelectItem>
-                  <SelectItem value="company">Şirket</SelectItem>
-                  <SelectItem value="hourly_rate">Saatlik Ücret</SelectItem>
+                  <SelectItem value="created_at">Date Created</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="hourly_rate">Hourly Rate</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -172,11 +172,11 @@ export default function ClientsPage() {
         {/* Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Müşteri Listesi</CardTitle>
+            <CardTitle>Client List</CardTitle>
             <CardDescription>
               {data
-                ? `Toplam ${data.total} müşteri bulundu`
-                : "Yükleniyor..."}
+                ? `${data.total} ${data.total === 1 ? "client" : "clients"} found`
+                : "Loading..."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -188,17 +188,17 @@ export default function ClientsPage() {
               </div>
             ) : error ? (
               <div className="text-center py-10 text-destructive">
-                Müşteriler yüklenirken bir hata oluştu.
+                Failed to load clients.
               </div>
             ) : data?.clients.length === 0 ? (
               <div className="text-center py-16 space-y-3">
                 <Users className="mx-auto h-12 w-12 text-muted-foreground/50" />
                 <div>
                   <p className="font-medium text-muted-foreground">
-                    Henüz müşteri yok
+                    No clients yet
                   </p>
                   <p className="text-sm text-muted-foreground/70">
-                    İlk müşterinizi ekleyerek başlayın.
+                    Add your first client to get started.
                   </p>
                 </div>
                 <Button
@@ -207,7 +207,7 @@ export default function ClientsPage() {
                   className="mt-2"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Müşteri Ekle
+                  Add Client
                 </Button>
               </div>
             ) : (
@@ -221,7 +221,7 @@ export default function ClientsPage() {
                           onClick={() => handleSort("name")}
                         >
                           <span className="flex items-center gap-1">
-                            İsim
+                            Name
                             <ArrowUpDown className="h-3 w-3" />
                           </span>
                         </TableHead>
@@ -230,24 +230,24 @@ export default function ClientsPage() {
                           onClick={() => handleSort("company")}
                         >
                           <span className="flex items-center gap-1">
-                            Şirket
+                            Company
                             <ArrowUpDown className="h-3 w-3" />
                           </span>
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          E-posta
+                          Email
                         </TableHead>
                         <TableHead
                           className="hidden lg:table-cell cursor-pointer hover:text-foreground transition-colors"
                           onClick={() => handleSort("hourly_rate")}
                         >
                           <span className="flex items-center gap-1">
-                            Saatlik Ücret
+                            Hourly Rate
                             <ArrowUpDown className="h-3 w-3" />
                           </span>
                         </TableHead>
                         <TableHead className="hidden lg:table-cell">
-                          Telefon
+                          Phone
                         </TableHead>
                         <TableHead className="w-[50px]" />
                       </TableRow>
@@ -280,7 +280,7 @@ export default function ClientsPage() {
                           </TableCell>
                           <TableCell className="hidden lg:table-cell">
                             {client.hourly_rate
-                              ? `₺${Number(client.hourly_rate).toFixed(2)}`
+                              ? `$${Number(client.hourly_rate).toFixed(2)}`
                               : "—"}
                           </TableCell>
                           <TableCell className="hidden lg:table-cell text-muted-foreground">
@@ -308,7 +308,7 @@ export default function ClientsPage() {
                                   }}
                                 >
                                   <Pencil className="mr-2 h-4 w-4" />
-                                  Düzenle
+                                  Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
@@ -318,7 +318,7 @@ export default function ClientsPage() {
                                   }}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
-                                  Sil
+                                  Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -333,7 +333,7 @@ export default function ClientsPage() {
                 {data && data.totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4">
                     <p className="text-sm text-muted-foreground">
-                      Sayfa {data.page} / {data.totalPages}
+                      Page {data.page} of {data.totalPages}
                     </p>
                     <div className="flex items-center gap-2">
                       <Button
@@ -343,7 +343,7 @@ export default function ClientsPage() {
                         onClick={() => handlePageChange(data.page - 1)}
                       >
                         <ChevronLeft className="h-4 w-4" />
-                        Önceki
+                        Previous
                       </Button>
                       <Button
                         variant="outline"
@@ -351,7 +351,7 @@ export default function ClientsPage() {
                         disabled={data.page >= data.totalPages}
                         onClick={() => handlePageChange(data.page + 1)}
                       >
-                        Sonraki
+                        Next
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -375,7 +375,7 @@ export default function ClientsPage() {
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Siliniyor...</span>
+            <span>Deleting...</span>
           </div>
         </div>
       )}
