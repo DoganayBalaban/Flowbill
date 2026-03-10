@@ -47,6 +47,7 @@ app.use(helmet());
 // Global rate limiting (Redis tabanlı - distributed sistemlerde çalışır)
 app.use(rateLimiters.api);
 
+import expenseRoute from "./routes/expenseRoute";
 import taskRoute from "./routes/taskRoute";
 
 app.use(morganMiddleware);
@@ -59,6 +60,7 @@ app.use("/api/timers", timerRoute);
 app.use("/api/invoices", invoiceRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/tasks", taskRoute);
+app.use("/api/expenses", expenseRoute);
 app.use(globalErrorHandler);
 async function startServer() {
   await connectDatabase();
