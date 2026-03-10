@@ -62,14 +62,14 @@ function formatDuration(minutes: number | null | undefined) {
   if (!minutes) return "—";
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (h === 0) return `${m} dk`;
-  if (m === 0) return `${h} sa`;
-  return `${h} sa ${m} dk`;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }
 
 function formatDateTime(iso: string | null | undefined) {
   if (!iso) return "—";
-  return new Intl.DateTimeFormat("tr-TR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -80,19 +80,19 @@ function formatDateTime(iso: string | null | undefined) {
 
 function formatCurrency(amount: number | null | undefined) {
   if (amount == null) return "—";
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "TRY",
+    currency: "USD",
   }).format(Number(amount));
 }
 
-/** Convert minutes to "Xsa Ydak" string for report summaries */
+/** Convert minutes to "Xh Ym" string for report summaries */
 function minutesToLabel(min: number) {
   const h = Math.floor(min / 60);
   const m = min % 60;
-  if (h === 0) return `${m} dk`;
-  if (m === 0) return `${h} sa`;
-  return `${h} sa ${m} dk`;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }
 
 // ─── Live Elapsed Clock ────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ function ActiveTimerCard() {
       <Card className="border-dashed">
         <CardContent className="flex items-center gap-3 py-5 text-muted-foreground">
           <Timer className="h-5 w-5" />
-          <span className="text-sm">Şu anda aktif timer yok.</span>
+          <span className="text-sm">No active timer running.</span>
         </CardContent>
       </Card>
     );
@@ -166,7 +166,7 @@ function ActiveTimerCard() {
           ) : (
             <Square className="h-4 w-4" />
           )}
-          <span className="ml-2">Durdur</span>
+          <span className="ml-2">Stop</span>
         </Button>
       </CardContent>
     </Card>
@@ -209,19 +209,19 @@ function StartTimerDialog() {
       <DialogTrigger asChild>
         <Button>
           <Play className="mr-2 h-4 w-4" />
-          Timer Başlat
+          Start Timer
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Timer Başlat</DialogTitle>
+          <DialogTitle>Start Timer</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="project">Proje *</Label>
+            <Label htmlFor="project">Project *</Label>
             <Select value={projectId} onValueChange={setProjectId} required>
               <SelectTrigger id="project">
-                <SelectValue placeholder="Proje seçin" />
+                <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
                 {projectsData?.projects.map((p) => (
@@ -233,10 +233,10 @@ function StartTimerDialog() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Açıklama</Label>
+            <Label htmlFor="description">Description</Label>
             <Input
               id="description"
-              placeholder="Ne üzerinde çalışıyorsunuz?"
+              placeholder="What are you working on?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -250,7 +250,7 @@ function StartTimerDialog() {
               className="h-4 w-4"
             />
             <Label htmlFor="billable" className="cursor-pointer">
-              Faturalanabilir
+              Billable
             </Label>
           </div>
           <Button
@@ -263,7 +263,7 @@ function StartTimerDialog() {
             ) : (
               <Play className="mr-2 h-4 w-4" />
             )}
-            Başlat
+            Start
           </Button>
         </form>
       </DialogContent>
@@ -341,15 +341,15 @@ function ManualEntryDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Kaydı Düzenle" : "Manuel Kayıt Ekle"}
+            {isEdit ? "Edit Entry" : "Add Manual Entry"}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label>Proje *</Label>
+            <Label>Project *</Label>
             <Select value={projectId} onValueChange={setProjectId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Proje seçin" />
+                <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
                 {projectsData?.projects.map((p) => (
@@ -361,16 +361,16 @@ function ManualEntryDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Açıklama</Label>
+            <Label>Description</Label>
             <Input
-              placeholder="Yapılan iş açıklaması"
+              placeholder="Description of work done"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Başlangıç *</Label>
+              <Label>Start *</Label>
               <Input
                 type="datetime-local"
                 required
@@ -379,7 +379,7 @@ function ManualEntryDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Bitiş *</Label>
+              <Label>End *</Label>
               <Input
                 type="datetime-local"
                 required
@@ -397,7 +397,7 @@ function ManualEntryDialog({
               className="h-4 w-4"
             />
             <Label htmlFor="billable-manual" className="cursor-pointer">
-              Faturalanabilir
+              Billable
             </Label>
           </div>
           <Button
@@ -410,7 +410,7 @@ function ManualEntryDialog({
             ) : (
               <Plus className="mr-2 h-4 w-4" />
             )}
-            {isEdit ? "Güncelle" : "Ekle"}
+            {isEdit ? "Save Changes" : "Add"}
           </Button>
         </form>
       </DialogContent>
@@ -449,7 +449,7 @@ function ReportTab() {
             <Input
               type="date"
               className="w-44"
-              placeholder="Başlangıç"
+              placeholder="Start"
               onChange={(e) =>
                 setParams((p) => ({
                   ...p,
@@ -460,7 +460,7 @@ function ReportTab() {
             <Input
               type="date"
               className="w-44"
-              placeholder="Bitiş"
+              placeholder="End"
               onChange={(e) =>
                 setParams((p) => ({
                   ...p,
@@ -478,10 +478,10 @@ function ReportTab() {
               }
             >
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Tüm Projeler" />
+                <SelectValue placeholder="All Projects" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tüm Projeler</SelectItem>
+                <SelectItem value="all">All Projects</SelectItem>
                 {projectsData?.projects.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
@@ -498,7 +498,7 @@ function ReportTab() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Toplam Süre
+              Total Duration
             </CardTitle>
             <Clock className="h-5 w-5 text-blue-500" />
           </CardHeader>
@@ -506,13 +506,13 @@ function ReportTab() {
             <p className="text-2xl font-bold">
               {minutesToLabel(report.total_minutes)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Tüm kayıtlar</p>
+            <p className="text-xs text-muted-foreground mt-1">All entries</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Faturalanabilir Süre
+              Billable Duration
             </CardTitle>
             <Timer className="h-5 w-5 text-emerald-500" />
           </CardHeader>
@@ -522,16 +522,16 @@ function ReportTab() {
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               {report.total_minutes > 0
-                ? `%${Math.round((report.total_billable_minutes / report.total_minutes) * 100)}`
+                ? `${Math.round((report.total_billable_minutes / report.total_minutes) * 100)}%`
                 : "—"}{" "}
-              faturalanabilir
+              billable
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Toplam Gelir
+              Total Revenue
             </CardTitle>
             <TrendingUp className="h-5 w-5 text-purple-500" />
           </CardHeader>
@@ -540,7 +540,7 @@ function ReportTab() {
               {formatCurrency(report.total_revenue)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Saatlik ücret bazlı
+              Based on hourly rate
             </p>
           </CardContent>
         </Card>
@@ -550,18 +550,18 @@ function ReportTab() {
       {report.projects.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Proje Dağılımı</CardTitle>
-            <CardDescription>{report.projects.length} proje</CardDescription>
+            <CardTitle className="text-lg">Project Breakdown</CardTitle>
+            <CardDescription>{report.projects.length} {report.projects.length === 1 ? "project" : "projects"}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Proje</TableHead>
-                    <TableHead>Toplam Süre</TableHead>
-                    <TableHead>Faturalanabilir</TableHead>
-                    <TableHead>Gelir</TableHead>
+                    <TableHead>Project</TableHead>
+                    <TableHead>Total Duration</TableHead>
+                    <TableHead>Billable</TableHead>
+                    <TableHead>Revenue</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -606,7 +606,7 @@ export default function TimeEntriesPage() {
   const deleteEntry = useDeleteTimeEntry();
 
   const handleDelete = (id: string) => {
-    if (confirm("Bu zaman kaydını silmek istediğinize emin misiniz?")) {
+    if (confirm("Are you sure you want to delete this time entry?")) {
       deleteEntry.mutate(id);
     }
   };
@@ -622,10 +622,10 @@ export default function TimeEntriesPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                Zaman Kayıtları
+                Time Entries
               </h1>
               <p className="text-sm text-muted-foreground">
-                Projelerinize harcadığınız zamanı takip edin
+                Track time spent on your projects
               </p>
             </div>
           </div>
@@ -638,7 +638,7 @@ export default function TimeEntriesPage() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Manuel Ekle
+              Add Manual
             </Button>
             <StartTimerDialog />
           </div>
@@ -652,7 +652,7 @@ export default function TimeEntriesPage() {
           <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="report" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Rapor & Analiz
+              Report & Analytics
             </TabsTrigger>
           </TabsList>
           <TabsContent value="report" className="mt-4">
@@ -676,7 +676,7 @@ export default function TimeEntriesPage() {
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Siliniyor...</span>
+            <span>Deleting...</span>
           </div>
         </div>
       )}
