@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
+  Receipt,
   Settings,
   Timer,
   Users,
@@ -31,6 +32,7 @@ const navItems = [
   { label: "Projects", href: "/projects", icon: FolderOpen },
   { label: "Invoices", href: "/invoices", icon: FileText },
   { label: "Time", href: "/time-entries", icon: Timer },
+  { label: "Expenses", href: "/expenses", icon: Receipt },
 ];
 
 function UserAvatar({ firstName, lastName, email, avatarUrl }: {
