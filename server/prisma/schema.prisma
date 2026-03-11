@@ -70,10 +70,14 @@ model Client {
   updated_at    DateTime  @default(now()) @updatedAt
   deleted_at    DateTime?
 
+  portal_token    String?   @unique @default(uuid())
+  portal_enabled  Boolean   @default(false)
+
   // Relations
-  user     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  projects Project[]
-  invoices Invoice[]
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  projects        Project[]
+  invoices        Invoice[]
+  portal_sessions PortalSession[]
 
   @@index([user_id])
   @@map("clients")
@@ -282,6 +286,20 @@ model Attachment {
 
   @@index([project_id])
   @@map("attachments")
+}
+
+model PortalSession {
+  id         String   @id @default(uuid())
+  client_id  String
+  token      String   @unique @db.VarChar(500)
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  client Client @relation(fields: [client_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([client_id])
+  @@map("portal_sessions")
 }
 
 model RefreshToken {
