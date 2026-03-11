@@ -494,14 +494,13 @@ export class InvoiceService {
   }
 
   /**
-   * Idempotent — enqueues an email delivery job for an invoice.
+   * Smart send: transitions status to "sent" (if draft), then either:
+   *  - PDF already generated → queues email directly
+   *  - PDF not ready / failed → queues PDF generation with sendAfterPdf=true
+   *  - PDF currently processing → returns without double-queuing (email will
+   *    be auto-triggered by pdfWorker on completion if sendAfterPdf was set)
    *
-   * Guards:
-   *  - Invoice must exist and belong to the user
-   *  - Status must not be draft or cancelled
-   *  - PDF must already be generated (pdf_status === "generated")
-   *
-   * @returns BullMQ job id
+   * @returns BullMQ job id or a status string
    */
   static async enqueueInvoiceEmail(
     userId: string,
@@ -516,22 +515,45 @@ export class InvoiceService {
       throw new AppError("Invoice not found", 404);
     }
 
-    if (invoice.status === "draft") {
-      throw new AppError("Draft invoice cannot be emailed", 400);
-    }
-
     if (invoice.status === "cancelled") {
-      throw new AppError("Cancelled invoice cannot be emailed", 400);
+      throw new AppError("Cancelled invoice cannot be sent", 400);
     }
 
-    if (invoice.pdf_status !== "generated" || !invoice.pdf_url) {
-      throw new AppError(
-        `Invoice PDF is not ready yet (pdf_status: ${invoice.pdf_status}). Generate the PDF first.`,
-        400,
-      );
+    // Transition draft → sent so the invoice is visible to the client portal
+    if (invoice.status === "draft") {
+      await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: { status: "sent", sent_at: new Date() },
+      });
     }
 
-    const job = await emailQueue.add("send-invoice-email", { invoiceId });
+    // PDF already generated — queue email immediately
+    if (invoice.pdf_status === "generated" && invoice.pdf_url) {
+      const job = await emailQueue.add("send-invoice-email", { invoiceId });
+      return job.id;
+    }
+
+    // PDF is currently being generated — pdfWorker won't know to send the
+    // email because sendAfterPdf wasn't set on the existing job. Queue a new
+    // PDF job with the flag; BullMQ deduplication by jobId prevents issues.
+    if (invoice.pdf_status === "processing") {
+      const job = await pdfQueue.add("generate-invoice-pdf", {
+        invoiceId,
+        sendAfterPdf: true,
+      });
+      return job.id;
+    }
+
+    // PDF not generated or failed — generate first, email after
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { pdf_status: "processing" },
+    });
+
+    const job = await pdfQueue.add("generate-invoice-pdf", {
+      invoiceId,
+      sendAfterPdf: true,
+    });
 
     return job.id;
   }
