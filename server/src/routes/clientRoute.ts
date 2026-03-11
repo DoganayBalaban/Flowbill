@@ -1,5 +1,10 @@
 import express from "express";
 import {
+  disableClientPortal,
+  enableClientPortal,
+  sendPortalMagicLink,
+} from "../controllers/clientPortalController";
+import {
   createClient,
   deleteClient,
   getAllClients,
@@ -187,5 +192,9 @@ router.get("/:id/time-entries", protect, getClientTimeEntries);
 router.get("/:id", protect, getClientById);
 router.patch("/:id", protect, updateClient);
 router.delete("/:id", protect, deleteClient);
+
+router.post("/:id/portal/enable", protect, enableClientPortal);
+router.post("/:id/portal/disable", protect, disableClientPortal);
+router.post("/:id/portal/send-link", protect, sendPortalMagicLink);
 
 export default router;

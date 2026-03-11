@@ -1,3 +1,58 @@
+interface MagicLinkEmailData {
+  clientName: string;
+  magicLink: string;
+  freelancerName: string;
+}
+
+export const buildMagicLinkEmailTemplate = (data: MagicLinkEmailData): string => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Your Invoices</title>
+  <style>
+    body { margin: 0; padding: 0; background: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .wrapper { max-width: 600px; margin: 32px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background: #1a1a2e; padding: 32px 40px; }
+    .header h1 { margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: 0.05em; }
+    .header p  { margin: 4px 0 0; color: #a0aec0; font-size: 13px; }
+    .body { padding: 32px 40px; }
+    .greeting { color: #1a1a2e; font-size: 15px; margin-bottom: 8px; }
+    .intro { color: #4a5568; font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+    .btn { display: inline-block; background: #4361ee; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 15px; font-weight: 600; text-align: center; }
+    .btn-wrap { text-align: center; margin-bottom: 28px; }
+    .notice { background: #fff8e1; border-left: 4px solid #f6c90e; border-radius: 4px; padding: 12px 16px; font-size: 12px; color: #7b6a00; margin-bottom: 24px; }
+    .footer { background: #f7f8fc; padding: 20px 40px; text-align: center; font-size: 12px; color: #a0aec0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>CLIENT PORTAL</h1>
+      <p>Secure Invoice Access</p>
+    </div>
+    <div class="body">
+      <p class="greeting">Hello ${data.clientName},</p>
+      <p class="intro">
+        ${data.freelancerName} has shared your invoices with you via a secure portal.
+        Click the button below to access your invoices. No account or password required.
+      </p>
+      <div class="btn-wrap">
+        <a href="${data.magicLink}" class="btn">View My Invoices &rarr;</a>
+      </div>
+      <div class="notice">
+        &#9203; This link expires in <strong>15 minutes</strong>. If it expires, ask ${data.freelancerName} to send a new one.
+      </div>
+    </div>
+    <div class="footer">
+      Sent via <strong>Timelyne</strong> &middot; This link is for ${data.clientName} only. Do not share it.
+    </div>
+  </div>
+</body>
+</html>
+`;
+
 interface InvoiceEmailData {
   invoiceNumber: string;
   clientName: string;
