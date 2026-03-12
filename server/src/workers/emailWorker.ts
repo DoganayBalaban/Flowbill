@@ -7,10 +7,74 @@ import { prisma } from "../utils/prisma";
 import { getSignedDownloadUrl } from "../utils/storageUpload";
 
 interface EmailJobData {
-  invoiceId: string;
+  invoiceId?: string;
+  userId?: string;
+  amount?: number;
 }
 
+const processPaymentReceivedNotification = async (job: Job<EmailJobData>) => {
+  const { invoiceId, userId, amount } = job.data;
+  if (!invoiceId || !userId) return;
+
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+    include: { client: { select: { name: true } } },
+  });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, first_name: true },
+  });
+
+  if (!invoice || !user?.email) return;
+
+  await sendEmail({
+    to: user.email,
+    subject: `Payment received for Invoice #${invoice.invoice_number}`,
+    html: `
+      <p>Hi ${user.first_name ?? "there"},</p>
+      <p>Great news! Your client <strong>${invoice.client.name}</strong> has paid
+      Invoice <strong>#${invoice.invoice_number}</strong>.</p>
+      <p><strong>Amount received:</strong> ${amount ?? Number(invoice.total)} ${invoice.currency}</p>
+      <p>The invoice has been automatically marked as paid.</p>
+    `,
+  });
+
+  logger.info(`[emailWorker] Payment notification sent to ${user.email}`);
+};
+
+const processSubscriptionPaymentFailed = async (job: Job<EmailJobData>) => {
+  const { userId } = job.data;
+  if (!userId) return;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, first_name: true },
+  });
+
+  if (!user?.email) return;
+
+  await sendEmail({
+    to: user.email,
+    subject: "Action required: Your Timelyne subscription payment failed",
+    html: `
+      <p>Hi ${user.first_name ?? "there"},</p>
+      <p>We were unable to process your subscription payment.</p>
+      <p>Please update your payment method to avoid losing access to your account.</p>
+      <p><a href="${process.env.FRONTEND_URL}/settings/billing">Update payment method</a></p>
+    `,
+  });
+
+  logger.info(`[emailWorker] Payment failed notification sent to ${user.email}`);
+};
+
 const processEmailJob = async (job: Job<EmailJobData>) => {
+  if (job.name === "payment-received-notification") {
+    return processPaymentReceivedNotification(job);
+  }
+  if (job.name === "subscription-payment-failed") {
+    return processSubscriptionPaymentFailed(job);
+  }
+
   const { invoiceId } = job.data;
 
   logger.info(
