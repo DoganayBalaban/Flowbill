@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  useCreatePaymentLink,
   useDownloadPdf,
   useGeneratePdf,
   useInvoice,
@@ -28,9 +29,12 @@ import {
 } from "@/lib/hooks/useInvoices";
 import {
   ArrowLeft,
+  Check,
+  Copy,
   CreditCard,
   Download,
   FileText,
+  Link,
   Loader2,
   Mail,
   RefreshCw,
@@ -112,8 +116,29 @@ export default function InvoiceDetailPage() {
   const generatePdf = useGeneratePdf();
   const downloadPdf = useDownloadPdf();
   const sendEmail = useSendInvoiceEmail();
+  const createPaymentLink = useCreatePaymentLink();
 
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleCopyPaymentLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const handleCreatePaymentLink = () => {
+    createPaymentLink.mutate(invoiceId, {
+      onSuccess: (data) => {
+        handleCopyPaymentLink(data.data.url);
+        toast.success("Payment link copied to clipboard!");
+      },
+      onError: (err: any) =>
+        toast.error(
+          err?.response?.data?.message ?? "Failed to create payment link",
+        ),
+    });
+  };
 
   if (isLoading) {
     return (
@@ -279,6 +304,41 @@ export default function InvoiceDetailPage() {
                     <Mail className="mr-2 h-4 w-4" />
                   )}
                   Resend Email
+                </Button>
+              )}
+            </>
+          )}
+          {/* Stripe Payment Link — visible for sent/overdue invoices */}
+          {(invoice.status === "sent" || invoice.status === "overdue") && (
+            <>
+              {invoice.stripe_payment_link_url ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    handleCopyPaymentLink(invoice.stripe_payment_link_url!)
+                  }
+                >
+                  {linkCopied ? (
+                    <Check className="mr-2 h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="mr-2 h-4 w-4" />
+                  )}
+                  {linkCopied ? "Copied!" : "Copy Payment Link"}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCreatePaymentLink}
+                  disabled={createPaymentLink.isPending}
+                >
+                  {createPaymentLink.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Link className="mr-2 h-4 w-4" />
+                  )}
+                  Create Payment Link
                 </Button>
               )}
             </>

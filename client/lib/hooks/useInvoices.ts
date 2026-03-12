@@ -133,3 +133,16 @@ export function useMarkAsPaid() {
     },
   });
 }
+
+// ── Create Stripe payment link ──────────────────────────────────────────────
+
+export function useCreatePaymentLink() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => invoicesApi.createPaymentLink(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["invoices", id] });
+    },
+  });
+}
