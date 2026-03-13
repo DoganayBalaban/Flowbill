@@ -20,11 +20,13 @@ import invoiceRoute from "./routes/invoiceRoute";
 import portalRoute from "./routes/portalRoute";
 import projectRoute from "./routes/projectRoute";
 import timerRoute from "./routes/timerRoute";
+import { scheduleOverdueCheck } from "./jobs/scheduleOverdueCheck";
 import subscriptionRoute from "./routes/subscriptionRoute";
 import webhookRoute from "./routes/webhookRoute";
 import logger from "./utils/logger";
 // Register BullMQ workers — must be imported so workers start listening
 import "./workers/emailWorker";
+import "./workers/overdueWorker";
 import "./workers/pdfWorker";
 
 const app = express();
@@ -74,6 +76,7 @@ app.use(globalErrorHandler);
 async function startServer() {
   await connectDatabase();
   await connectRedis();
+  await scheduleOverdueCheck();
 
   httpServer.listen(env.PORT, () => {
     logger.info(`🚀 Server is running on port ${env.PORT}`);
