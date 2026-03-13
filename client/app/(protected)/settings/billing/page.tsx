@@ -19,7 +19,7 @@ import {
 } from "@/lib/hooks/useSubscription";
 import { Check, CreditCard, Loader2, Settings, Zap } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 
 // ── Plan config ─────────────────────────────────────────────────────────────
@@ -92,21 +92,25 @@ function getStatusBadge(status: string | null) {
   );
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Stripe return handler (needs Suspense for useSearchParams) ───────────────
 
-export default function BillingPage() {
+function StripeReturnHandler({ refetch }: { refetch: () => void }) {
   const searchParams = useSearchParams();
-  const { data: subscription, isLoading, refetch } = useSubscriptionStatus();
-  const createCheckout = useCreateCheckout();
-  const openPortal = useOpenBillingPortal();
-
-  // Handle return from Stripe Checkout
   useEffect(() => {
     if (searchParams.get("session_id")) {
       refetch();
       toast.success("Plan upgraded successfully!");
     }
   }, [searchParams, refetch]);
+  return null;
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
+export default function BillingPage() {
+  const { data: subscription, isLoading, refetch } = useSubscriptionStatus();
+  const createCheckout = useCreateCheckout();
+  const openPortal = useOpenBillingPortal();
 
   const currentPlan = subscription?.plan ?? "free";
   const isOnPaidPlan = currentPlan !== "free";
@@ -127,6 +131,9 @@ export default function BillingPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
+      <Suspense fallback={null}>
+        <StripeReturnHandler refetch={refetch} />
+      </Suspense>
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Billing & Plans</h1>
         <p className="text-sm text-muted-foreground mt-1">
