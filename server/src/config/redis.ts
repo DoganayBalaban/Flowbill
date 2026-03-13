@@ -2,14 +2,11 @@ import Redis from "ioredis";
 import logger from "../utils/logger";
 import { env } from "./env";
 
-// TLS only in production (Upstash requires it, local Redis does not)
-const isProduction = process.env.NODE_ENV === "production";
-
 const redisOptions = {
   host: env.REDIS_HOST,
   port: Number(env.REDIS_PORT),
   password: env.REDIS_PASSWORD,
-  ...(isProduction && { tls: {} }),
+  ...(env.REDIS_TLS && { tls: {} }),
   maxRetriesPerRequest: 3,
   retryStrategy(times: number) {
     const delay = Math.min(times * 50, 2000);

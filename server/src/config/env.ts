@@ -12,6 +12,7 @@ export const env = {
   REDIS_HOST: process.env.REDIS_HOST || "",
   REDIS_PORT: process.env.REDIS_PORT || "",
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || "",
+  REDIS_TLS: process.env.REDIS_TLS === "true",
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
   AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || "",
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || "",
