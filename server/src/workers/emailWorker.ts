@@ -1,15 +1,28 @@
 import { Job, Worker } from "bullmq";
 import { bullMqConnection } from "../queues/pdfQueue";
 import { sendEmail } from "../utils/email";
-import { buildInvoiceEmailTemplate } from "../utils/emailTemplates";
+import {
+  buildInvoiceEmailTemplate,
+  buildOverdueReminderEmailTemplate,
+} from "../utils/emailTemplates";
 import logger from "../utils/logger";
 import { prisma } from "../utils/prisma";
 import { getSignedDownloadUrl } from "../utils/storageUpload";
+
+interface OverdueInvoiceSummary {
+  id: string;
+  invoice_number: string;
+  client_name: string;
+  due_date: Date | string;
+  total: number;
+  currency: string;
+}
 
 interface EmailJobData {
   invoiceId?: string;
   userId?: string;
   amount?: number;
+  invoices?: OverdueInvoiceSummary[];
 }
 
 const processPaymentReceivedNotification = async (job: Job<EmailJobData>) => {
@@ -67,12 +80,43 @@ const processSubscriptionPaymentFailed = async (job: Job<EmailJobData>) => {
   logger.info(`[emailWorker] Payment failed notification sent to ${user.email}`);
 };
 
+const processOverdueInvoiceReminder = async (job: Job<EmailJobData>) => {
+  const { userId, invoices } = job.data;
+  if (!userId || !invoices?.length) return;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, first_name: true },
+  });
+
+  if (!user?.email) return;
+
+  const html = buildOverdueReminderEmailTemplate({
+    firstName: user.first_name ?? "there",
+    invoices,
+    dashboardUrl: `${process.env.FRONTEND_URL}/invoices?status=overdue`,
+  });
+
+  await sendEmail({
+    to: user.email,
+    subject: `Action required: ${invoices.length} overdue invoice${invoices.length > 1 ? "s" : ""} need attention`,
+    html,
+  });
+
+  logger.info(
+    `[emailWorker] Overdue reminder sent to ${user.email} for ${invoices.length} invoice(s)`,
+  );
+};
+
 const processEmailJob = async (job: Job<EmailJobData>) => {
   if (job.name === "payment-received-notification") {
     return processPaymentReceivedNotification(job);
   }
   if (job.name === "subscription-payment-failed") {
     return processSubscriptionPaymentFailed(job);
+  }
+  if (job.name === "overdue-invoice-reminder") {
+    return processOverdueInvoiceReminder(job);
   }
 
   const { invoiceId } = job.data;
