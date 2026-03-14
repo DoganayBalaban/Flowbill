@@ -13,6 +13,7 @@ import {
   updateInvoice,
 } from "../controllers/invoiceController";
 import { protect } from "../middlewares/authMiddleware";
+import { invoiceSendLimiter } from "../middlewares/rateLimiter";
 
 const router = Router();
 
@@ -214,8 +215,8 @@ router.delete("/:id", protect, deleteInvoice);
  */
 router.post("/:id/pdf", protect, generateInvoicePdf);
 router.get("/:id/download", protect, downloadInvoicePdf);
-router.post("/:id/send", protect, sendInvoiceEmail);
+router.post("/:id/send", protect, invoiceSendLimiter, sendInvoiceEmail);
 router.post("/:id/mark-paid", protect, markInvoiceAsPaid);
-router.post("/:id/payment-link", protect, createPaymentLink);
+router.post("/:id/payment-link", protect, invoiceSendLimiter, createPaymentLink);
 
 export default router;

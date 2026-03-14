@@ -10,7 +10,6 @@ export const loginLimiter = redisRateLimit({
   maxRequests: 5,
   keyPrefix: "ratelimit:login",
   message: "Too many login attempts, please try again after 15 minutes.",
-  skipFailedRequests: true, // Don't count failed requests (wrong password doesn't consume limit)
 });
 
 // Register rate limiter - very strict to prevent spam
@@ -43,4 +42,20 @@ export const verificationLimiter = redisRateLimit({
   maxRequests: 3,
   keyPrefix: "ratelimit:verification",
   message: "Too many verification email requests, please try again later.",
+});
+
+// Portal magic link send limiter
+export const magicLinkLimiter = redisRateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  maxRequests: 5,
+  keyPrefix: "ratelimit:magic-link",
+  message: "Too many magic link requests, please try again after 1 hour.",
+});
+
+// Invoice send limiter (email + payment link)
+export const invoiceSendLimiter = redisRateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  maxRequests: 20,
+  keyPrefix: "ratelimit:invoice-send",
+  message: "Too many invoice send requests, please try again later.",
 });

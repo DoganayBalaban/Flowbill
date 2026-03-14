@@ -17,6 +17,7 @@ import {
   updateClient,
 } from "../controllers/clientControllers";
 import { protect } from "../middlewares/authMiddleware";
+import { magicLinkLimiter } from "../middlewares/rateLimiter";
 
 const router = express.Router();
 
@@ -195,6 +196,6 @@ router.delete("/:id", protect, deleteClient);
 
 router.post("/:id/portal/enable", protect, enableClientPortal);
 router.post("/:id/portal/disable", protect, disableClientPortal);
-router.post("/:id/portal/send-link", protect, sendPortalMagicLink);
+router.post("/:id/portal/send-link", protect, magicLinkLimiter, sendPortalMagicLink);
 
 export default router;
