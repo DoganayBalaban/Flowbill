@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDeleteAccount, useUpdateMe, useUser } from "@/lib/hooks/useAuth";
+import { useDeleteAccount, useResendVerification, useUpdateMe, useUser } from "@/lib/hooks/useAuth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertDialog,
@@ -160,6 +160,7 @@ export default function SettingsPage() {
   const { data: user, isLoading } = useUser();
   const updateMe = useUpdateMe();
   const deleteAccount = useDeleteAccount();
+  const resendVerification = useResendVerification();
   const [deletePassword, setDeletePassword] = useState("");
 
   /* Profile form */
@@ -537,13 +538,32 @@ export default function SettingsPage() {
                       Verified
                     </Badge>
                   ) : (
-                    <Badge
-                      variant="secondary"
-                      className="gap-1 text-amber-600 bg-amber-500/10 border-amber-500/20 shrink-0"
-                    >
-                      <XCircle className="h-3.5 w-3.5" />
-                      Unverified
-                    </Badge>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge
+                        variant="secondary"
+                        className="gap-1 text-amber-600 bg-amber-500/10 border-amber-500/20"
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        Unverified
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        disabled={resendVerification.isPending || resendVerification.isSuccess}
+                        onClick={() => user?.email && resendVerification.mutate(user.email, {
+                          onSuccess: () => toast.success("Verification email sent"),
+                          onError: () => toast.error("Failed to send verification email"),
+                        })}
+                      >
+                        {resendVerification.isPending
+                          ? <Loader2 className="h-3 w-3 animate-spin" />
+                          : resendVerification.isSuccess
+                          ? "Sent"
+                          : "Resend"
+                        }
+                      </Button>
+                    </div>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">

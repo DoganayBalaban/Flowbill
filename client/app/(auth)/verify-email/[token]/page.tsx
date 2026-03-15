@@ -1,14 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useVerifyEmail } from "@/lib/hooks/useAuth";
-import { ArrowRight, Loader2, MailCheck, MailX } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useResendVerification, useVerifyEmail } from "@/lib/hooks/useAuth";
+import { ArrowRight, Loader2, MailCheck, MailX, Send } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type Status = "loading" | "success" | "error";
+type Status = "loading" | "success" | "error" | "resent";
 
 /* ── Shared split layout ───────────────────────────────────── */
 function Layout({ children }: { children: React.ReactNode }) {
@@ -83,7 +84,9 @@ export default function VerifyEmailPage() {
   const params = useParams();
   const token = params.token as string;
   const verifyEmail = useVerifyEmail();
+  const resendVerification = useResendVerification();
   const [status, setStatus] = useState<Status>("loading");
+  const [resendEmail, setResendEmail] = useState("");
 
   useEffect(() => {
     if (token) {
@@ -94,6 +97,13 @@ export default function VerifyEmailPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  const handleResend = () => {
+    if (!resendEmail) return;
+    resendVerification.mutate(resendEmail, {
+      onSuccess: () => setStatus("resent"),
+    });
+  };
 
   /* ── Loading ─────────────────────────────────────────────── */
   if (status === "loading") {
@@ -170,6 +180,31 @@ export default function VerifyEmailPage() {
     );
   }
 
+  /* ── Resent ──────────────────────────────────────────────── */
+  if (status === "resent") {
+    return (
+      <Layout>
+        <div className="space-y-8 text-center">
+          <div className="flex justify-center">
+            <div className="h-20 w-20 rounded-2xl bg-violet-500/10 flex items-center justify-center">
+              <MailCheck className="h-9 w-9 text-violet-600" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight">Check your inbox</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              If an unverified account exists for <strong>{resendEmail}</strong>,
+              a new verification link has been sent. It expires in 24 hours.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full h-11">
+            <Link href="/login">Back to sign in</Link>
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
+
   /* ── Error ───────────────────────────────────────────────── */
   return (
     <Layout>
@@ -180,44 +215,48 @@ export default function VerifyEmailPage() {
               <MailX className="h-9 w-9 text-destructive" />
             </div>
             <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-destructive flex items-center justify-center shadow-lg">
-              <svg
-                className="h-4 w-4 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={3}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold tracking-tight">
-            Verification failed
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight">Verification failed</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             This link is invalid or has expired. Verification links are only
             valid for 24 hours.
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 text-left">
+          <p className="text-sm font-medium text-center">Resend verification email</p>
+          <Input
+            type="email"
+            placeholder="Enter your email address"
+            value={resendEmail}
+            onChange={(e) => setResendEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleResend()}
+            className="h-11"
+          />
           <Button
-            asChild
-            className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-500/20"
+            onClick={handleResend}
+            disabled={!resendEmail || resendVerification.isPending}
+            className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-500/20 gap-2"
           >
-            <Link href="/login">Sign in to resend link</Link>
+            {resendVerification.isPending
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <Send className="h-4 w-4" />
+            }
+            Send new link
           </Button>
-          <p className="text-xs text-muted-foreground">
-            After signing in, you can request a new verification email from your
-            account settings.
-          </p>
+          <Button asChild variant="ghost" className="w-full h-11">
+            <Link href="/login">
+              Back to sign in
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </Layout>
