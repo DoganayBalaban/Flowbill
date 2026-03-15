@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { BCRYPT_ROUNDS } from "../config/constants";
 import { env } from "../config/env";
 import { redis } from "../config/redis";
+import { stripe } from "../config/stripe";
 import { AppError } from "../utils/appError";
 import { cache } from "../utils/cache";
 import { prisma } from "../utils/prisma";
@@ -370,5 +371,59 @@ export class AuthService {
     });
 
     return { emailSent: true, verificationToken, userEmail: user.email };
+  }
+
+  static async deleteAccount(userId: string, password: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId, deleted_at: null },
+    });
+
+    if (!user) throw new AppError("User not found", 404);
+
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    if (!passwordMatch) throw new AppError("Incorrect password", 401);
+
+    // Cancel Stripe subscription if active
+    if (user.stripe_subscription_id) {
+      try {
+        await stripe.subscriptions.cancel(user.stripe_subscription_id);
+      } catch {
+        // Non-fatal: subscription may already be cancelled
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Revoke all refresh tokens
+      await tx.refreshToken.updateMany({
+        where: { user_id: userId, revoked_at: null },
+        data: { revoked_at: new Date() },
+      });
+
+      // Soft delete + GDPR anonymisation
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          deleted_at: new Date(),
+          email: `deleted_${userId}@deleted.invalid`,
+          password_hash: "DELETED",
+          first_name: null,
+          last_name: null,
+          avatar_url: null,
+          stripe_subscription_id: null,
+          stripe_customer_id: null,
+          verification_token: null,
+          password_reset_token: null,
+        },
+      });
+    });
+
+    // Clear all Redis caches for this user
+    await Promise.all([
+      cache.deletePattern(`sess:*`),
+      redis.del(`dashboard:stats:${userId}`),
+      redis.del(`dashboard:revenue:${userId}`),
+    ]);
+
+    return { email: user.email };
   }
 }

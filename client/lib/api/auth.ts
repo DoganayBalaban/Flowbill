@@ -111,6 +111,12 @@ export const authApi = {
     const response = await api.post("/auth/resend-verification", { email });
     return response.data;
   },
+
+  // Delete account
+  deleteAccount: async (password: string): Promise<AuthResponse> => {
+    const response = await api.delete("/auth/me", { data: { password } });
+    return response.data;
+  },
 };
 
 export default authApi;

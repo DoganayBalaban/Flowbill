@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  deleteAccount,
   forgotPassword,
   login,
   logout,
@@ -178,6 +179,7 @@ router.post("/reset-password/:token", passwordResetLimiter, resetPassword);
  */
 router.get("/me", protect, me);
 router.patch("/me", protect, updateMe);
+router.delete("/me", protect, deleteAccount);
 
 /**
  * @openapi

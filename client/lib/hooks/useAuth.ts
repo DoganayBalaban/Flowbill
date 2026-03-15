@@ -134,3 +134,19 @@ export function useResendVerification() {
     mutationFn: (email: string) => authApi.resendVerification(email),
   });
 }
+
+// Delete account hook
+export function useDeleteAccount() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
+
+  return useMutation({
+    mutationFn: (password: string) => authApi.deleteAccount(password),
+    onSuccess: () => {
+      dispatch(logoutAction());
+      queryClient.clear();
+      router.push("/");
+    },
+  });
+}

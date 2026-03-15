@@ -20,19 +20,30 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useUpdateMe, useUser } from "@/lib/hooks/useAuth";
+import { useDeleteAccount, useUpdateMe, useUser } from "@/lib/hooks/useAuth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Briefcase,
   CheckCircle2,
   KeyRound,
   Loader2,
   Shield,
+  Trash2,
   User,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -148,6 +159,8 @@ function AvatarPreview({
 export default function SettingsPage() {
   const { data: user, isLoading } = useUser();
   const updateMe = useUpdateMe();
+  const deleteAccount = useDeleteAccount();
+  const [deletePassword, setDeletePassword] = useState("");
 
   /* Profile form */
   const profileForm = useForm<ProfileForm>({
@@ -609,6 +622,75 @@ export default function SettingsPage() {
                   Reset password
                 </Link>
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-destructive">Danger zone</CardTitle>
+              <CardDescription>
+                Permanently delete your account and all associated data. This
+                action cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">Delete account</p>
+                <p className="text-xs text-muted-foreground">
+                  All your data — clients, invoices, projects — will be
+                  permanently removed.
+                </p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="shrink-0 gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Delete account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all your data including
+                      clients, projects, invoices, and time entries. Your active
+                      subscription will also be cancelled. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="space-y-1.5 py-2">
+                    <Label htmlFor="delete-password" className="text-sm font-medium">
+                      Confirm your password
+                    </Label>
+                    <Input
+                      id="delete-password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                    />
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setDeletePassword("")}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <Button
+                      variant="destructive"
+                      disabled={!deletePassword || deleteAccount.isPending}
+                      onClick={() =>
+                        deleteAccount.mutate(deletePassword, {
+                          onError: () => toast.error("Incorrect password or server error"),
+                        })
+                      }
+                    >
+                      {deleteAccount.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Yes, delete my account
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </TabsContent>

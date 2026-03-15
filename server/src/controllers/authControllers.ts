@@ -189,6 +189,37 @@ export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
     message: "Email verified successfully",
   });
 });
+export const deleteAccount = catchAsync(async (req: AuthRequest, res: Response) => {
+  if (!req.user?.id) throw new AppError("Unauthorized", 401);
+
+  const { password } = req.body;
+  if (!password || typeof password !== "string") {
+    throw new AppError("Password is required to delete your account", 400);
+  }
+
+  const { email } = await AuthService.deleteAccount(req.user.id, password);
+
+  // Send confirmation email (best-effort)
+  await sendEmail({
+    to: email,
+    subject: "Your Timelyne account has been deleted",
+    html: `<p>Your account has been permanently deleted. All your data has been removed.</p>`,
+  }).catch(() => {});
+
+  // Clear cookies
+  const isProd = env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: (isProd ? "none" : "lax") as any,
+  };
+  res.clearCookie("refreshToken", cookieOptions);
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("sid", cookieOptions);
+
+  res.status(200).json({ status: "success", message: "Account deleted successfully" });
+});
+
 export const resendVerificationEmail = catchAsync(
   async (req: Request, res: Response) => {
     const { email } = req.body;
