@@ -46,12 +46,36 @@ export class ClientService {
         orderBy: { [sort]: order },
         skip,
         take: limit,
+        include: {
+          _count: { select: { projects: true } },
+        },
       }),
       prisma.client.count({ where }),
     ]);
 
+    // Compute real-time revenue per client (non-cancelled invoices)
+    const clientIds = clients.map((c) => c.id);
+    const revenueRows = await prisma.invoice.groupBy({
+      by: ["client_id"],
+      where: {
+        client_id: { in: clientIds },
+        user_id: userId,
+        deleted_at: null,
+        status: { not: "cancelled" },
+      },
+      _sum: { total: true },
+    });
+    const revenueMap = new Map(
+      revenueRows.map((r) => [r.client_id, r._sum.total?.toNumber() ?? 0]),
+    );
+
+    const clientsWithRevenue = clients.map((c) => ({
+      ...c,
+      total_revenue: revenueMap.get(c.id) ?? 0,
+    }));
+
     return {
-      clients,
+      clients: clientsWithRevenue,
       total,
       page,
       limit,
