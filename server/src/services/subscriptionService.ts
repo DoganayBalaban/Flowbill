@@ -119,7 +119,7 @@ export class SubscriptionService {
   }
 
   /**
-   * Maps a Stripe price ID to a Timelyne plan name.
+   * Maps a Stripe price ID to a Flowbill plan name.
    */
   static getPlanFromPriceId(priceId: string): string {
     return PRICE_PLAN_MAP[priceId] ?? "free";

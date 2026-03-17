@@ -69,7 +69,7 @@ const processSubscriptionPaymentFailed = async (job: Job<EmailJobData>) => {
 
   await sendEmail({
     to: user.email,
-    subject: "Action required: Your Timelyne subscription payment failed",
+    subject: "Action required: Your Flowbill subscription payment failed",
     html: `
       <p>Hi ${user.first_name ?? "there"},</p>
       <p>We were unable to process your subscription payment.</p>
@@ -172,7 +172,7 @@ const processEmailJob = async (job: Job<EmailJobData>) => {
 
   await sendEmail({
     to: invoice.client.email,
-    subject: `Invoice #${invoice.invoice_number} from Timelyne`,
+    subject: `Invoice #${invoice.invoice_number} from Flowbill`,
     html,
   });
 

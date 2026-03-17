@@ -46,7 +46,7 @@ export const buildMagicLinkEmailTemplate = (data: MagicLinkEmailData): string =>
       </div>
     </div>
     <div class="footer">
-      Sent via <strong>Timelyne</strong> &middot; This link is for ${data.clientName} only. Do not share it.
+      Sent via <strong>Flowbill</strong> &middot; This link is for ${data.clientName} only. Do not share it.
     </div>
   </div>
 </body>
@@ -136,7 +136,7 @@ export const buildOverdueReminderEmailTemplate = (
       </div>
     </div>
     <div class="footer">
-      Sent via <strong>Timelyne</strong> &middot; This is an automated reminder.
+      Sent via <strong>Flowbill</strong> &middot; This is an automated reminder.
     </div>
   </div>
 </body>
@@ -231,7 +231,7 @@ export const buildInvoiceEmailTemplate = (data: InvoiceEmailData): string => `
       ${data.notes ? `<div class="notes"><strong>Notes:</strong><br/>${data.notes}</div>` : ""}
     </div>
     <div class="footer">
-      Sent via <strong>Timelyne</strong> · You received this because an invoice was created for you.
+      Sent via <strong>Flowbill</strong> · You received this because an invoice was created for you.
     </div>
   </div>
 </body>

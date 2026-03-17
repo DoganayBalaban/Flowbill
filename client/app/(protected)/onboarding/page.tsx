@@ -125,8 +125,8 @@ export default function OnboardingPage() {
       <div className="w-full flex justify-center pt-8 pb-4">
         <Image
           className="dark:invert"
-          src="/timelyne-logo.png"
-          alt="Timelyne Logo"
+          src="/flowbill-logo.png"
+          alt="Flowbill Logo"
           width={180}
           height={86}
           priority
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
                     Welcome, {user?.first_name}! 👋
                   </CardTitle>
                   <CardDescription className="text-base mt-2">
-                    Help us personalize Timelyne for you
+                    Help us personalize Flowbill for you
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -359,7 +359,7 @@ export default function OnboardingPage() {
 
       {/* Footer */}
       <div className="py-4 text-center text-sm text-muted-foreground">
-        <p>© 2026 Timelyne. All rights reserved.</p>
+        <p>© 2026 Flowbill. All rights reserved.</p>
       </div>
     </div>
   );

@@ -298,7 +298,7 @@ export default function PortalInvoiceDetailPage() {
 
       {/* Footer */}
       <p className="text-center text-xs text-muted-foreground pb-6">
-        Powered by <strong>Timelyne</strong>
+        Powered by <strong>Flowbill</strong>
       </p>
     </div>
   );

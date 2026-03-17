@@ -5,7 +5,7 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Timelyne API",
+      title: "Flowbill API",
       version: "1.0.0",
       description: "Freelancer time tracking and invoicing API",
     },

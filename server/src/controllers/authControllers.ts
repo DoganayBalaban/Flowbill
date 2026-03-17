@@ -202,7 +202,7 @@ export const deleteAccount = catchAsync(async (req: AuthRequest, res: Response) 
   // Send confirmation email (best-effort)
   await sendEmail({
     to: email,
-    subject: "Your Timelyne account has been deleted",
+    subject: "Your Flowbill account has been deleted",
     html: `<p>Your account has been permanently deleted. All your data has been removed.</p>`,
   }).catch(() => {});
 
