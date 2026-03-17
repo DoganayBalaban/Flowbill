@@ -26,6 +26,7 @@ export function useInvoice(id: string) {
     queryFn: () => invoicesApi.getInvoice(id),
     select: (data) => data.data,
     enabled: !!id,
+    refetchOnMount: "always",
   });
 }
 
@@ -113,8 +114,9 @@ export function useSendInvoiceEmail() {
 
   return useMutation({
     mutationFn: (id: string) => invoicesApi.sendEmail(id),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["invoices", id] });
     },
   });
 }

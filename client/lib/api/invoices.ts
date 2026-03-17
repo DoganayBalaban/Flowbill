@@ -206,7 +206,7 @@ export const invoicesApi = {
     id: string,
     force = false,
   ): Promise<{ success: boolean; message: string; jobId: string }> => {
-    const response = await api.post(`/invoices/${id}/pdf`, null, {
+    const response = await api.post(`/invoices/${id}/pdf`, {}, {
       params: { force },
     });
     return response.data;

@@ -181,7 +181,10 @@ export default function InvoiceDetailPage() {
           toast.info("Generating PDF...", {
             description: "You will be notified when it's ready.",
           }),
-        onError: () => toast.error("Failed to generate PDF"),
+        onError: (err: any) =>
+          toast.error(
+            err?.response?.data?.message ?? "Failed to generate PDF",
+          ),
       },
     );
   };
@@ -263,7 +266,14 @@ export default function InvoiceDetailPage() {
                     onClick={() =>
                       generatePdf.mutate(
                         { id: invoiceId, force: true },
-                        { onSuccess: () => toast.info("Regenerating PDF...") },
+                        {
+                          onSuccess: () => toast.info("Regenerating PDF..."),
+                          onError: (err: any) =>
+                            toast.error(
+                              err?.response?.data?.message ??
+                                "Failed to regenerate PDF",
+                            ),
+                        },
                       )
                     }
                     disabled={generatePdf.isPending}
