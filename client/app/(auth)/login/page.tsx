@@ -20,7 +20,9 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 
 function getLoginError(error: unknown): { message: string; hint?: string } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const status = (error as any)?.response?.status;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const msg: string = (error as any)?.response?.data?.message ?? "";
 
   if (!status) {
@@ -167,6 +169,7 @@ export default function LoginPage() {
             {login.error &&
               (() => {
                 const err = getLoginError(login.error);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const isNetwork = !(login.error as any)?.response?.status;
                 return (
                   <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex gap-3">

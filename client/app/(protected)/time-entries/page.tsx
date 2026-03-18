@@ -307,11 +307,13 @@ function ManualEntryDialog({
   const [billable, setBillable] = useState(entry?.billable ?? true);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setProjectId(entry?.project_id ?? "");
     setDescription(entry?.description ?? "");
     setStartedAt(toLocal(entry?.started_at));
     setEndedAt(toLocal(entry?.ended_at));
     setBillable(entry?.billable ?? true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [entry]);
 
   const handleSubmit = (e: React.FormEvent) => {
