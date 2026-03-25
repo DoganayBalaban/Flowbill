@@ -17,14 +17,17 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
+  Menu,
   Receipt,
   Settings,
   Timer,
   Users,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -73,6 +76,12 @@ export function Navbar() {
   const pathname = usePathname();
   const { data: user } = useUser();
   const logout = useLogout();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Sayfa değişince mobil menüyü kapat
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -92,8 +101,8 @@ export function Navbar() {
           <span className="font-semibold text-lg tracking-tight">Flowbill</span>
         </Link>
 
-        {/* Nav Links */}
-        <nav className="flex items-center gap-1">
+        {/* Nav Links — sadece desktop */}
+        <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
@@ -116,7 +125,7 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right side — user avatar dropdown */}
+        {/* Right side */}
         <div className="ml-auto flex items-center gap-2">
           <Separator orientation="vertical" className="h-5 hidden sm:block" />
 
@@ -172,8 +181,47 @@ export function Navbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Hamburger — sadece mobile */}
+          <button
+            className="md:hidden flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menü */}
+      {mobileOpen && (
+        <div className="md:hidden border-t bg-background px-4 py-3 flex flex-col gap-1">
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link key={item.href} href={item.href}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  size="sm"
+                  className={`w-full justify-start ${
+                    isActive
+                      ? "font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </Button>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </header>
   );
 }
