@@ -34,6 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "@/lib/i18n/context";
 import { TimeEntry, TimeReportParams } from "@/lib/api/timeEntries";
 import { useProjects } from "@/lib/hooks/useProjects";
 import {
@@ -125,6 +126,7 @@ function ActiveTimerCard() {
   const { data: active, isLoading } = useActiveTimer();
   const stopTimer = useStopTimer();
   const elapsed = useLiveElapsed(active?.started_at ?? null);
+  const { t } = useTranslation();
 
   if (isLoading) return <Skeleton className="h-28 w-full" />;
 
@@ -133,7 +135,7 @@ function ActiveTimerCard() {
       <Card className="border-dashed">
         <CardContent className="flex items-center gap-3 py-5 text-muted-foreground">
           <Timer className="h-5 w-5" />
-          <span className="text-sm">No active timer running.</span>
+          <span className="text-sm">{t("time_entries.no_active_timer")}</span>
         </CardContent>
       </Card>
     );
@@ -166,7 +168,7 @@ function ActiveTimerCard() {
           ) : (
             <Square className="h-4 w-4" />
           )}
-          <span className="ml-2">Stop</span>
+          <span className="ml-2">{t("time_entries.stop_timer")}</span>
         </Button>
       </CardContent>
     </Card>
@@ -180,6 +182,7 @@ function StartTimerDialog() {
   const [projectId, setProjectId] = useState("");
   const [description, setDescription] = useState("");
   const [billable, setBillable] = useState(true);
+  const { t } = useTranslation();
 
   const { data: projectsData } = useProjects({
     limit: 100,
@@ -209,19 +212,19 @@ function StartTimerDialog() {
       <DialogTrigger asChild>
         <Button>
           <Play className="mr-2 h-4 w-4" />
-          Start Timer
+          {t("time_entries.start_timer")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Start Timer</DialogTitle>
+          <DialogTitle>{t("time_entries.start_timer")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="project">Project *</Label>
+            <Label htmlFor="project">{t("time_entries.project_required")}</Label>
             <Select value={projectId} onValueChange={setProjectId} required>
               <SelectTrigger id="project">
-                <SelectValue placeholder="Select project" />
+                <SelectValue placeholder={t("time_entries.select_project")} />
               </SelectTrigger>
               <SelectContent>
                 {projectsData?.projects.map((p) => (
@@ -233,10 +236,10 @@ function StartTimerDialog() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("time_entries.description_label")}</Label>
             <Input
               id="description"
-              placeholder="What are you working on?"
+              placeholder={t("time_entries.description_placeholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -250,7 +253,7 @@ function StartTimerDialog() {
               className="h-4 w-4"
             />
             <Label htmlFor="billable" className="cursor-pointer">
-              Billable
+              {t("time_entries.billable")}
             </Label>
           </div>
           <Button
@@ -263,7 +266,7 @@ function StartTimerDialog() {
             ) : (
               <Play className="mr-2 h-4 w-4" />
             )}
-            Start
+            {t("time_entries.start_btn")}
           </Button>
         </form>
       </DialogContent>
@@ -336,21 +339,22 @@ function ManualEntryDialog({
   };
 
   const isPending = createManual.isPending || updateEntry.isPending;
+  const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit Entry" : "Add Manual Entry"}
+            {isEdit ? t("time_entries.edit_entry") : t("time_entries.add_manual_entry")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label>Project *</Label>
+            <Label>{t("time_entries.project_required")}</Label>
             <Select value={projectId} onValueChange={setProjectId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select project" />
+                <SelectValue placeholder={t("time_entries.select_project")} />
               </SelectTrigger>
               <SelectContent>
                 {projectsData?.projects.map((p) => (
@@ -362,16 +366,16 @@ function ManualEntryDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t("time_entries.description_label")}</Label>
             <Input
-              placeholder="Description of work done"
+              placeholder={t("time_entries.description_work")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Start *</Label>
+              <Label>{t("time_entries.start_label")}</Label>
               <Input
                 type="datetime-local"
                 required
@@ -380,7 +384,7 @@ function ManualEntryDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>End *</Label>
+              <Label>{t("time_entries.end_label")}</Label>
               <Input
                 type="datetime-local"
                 required
@@ -398,7 +402,7 @@ function ManualEntryDialog({
               className="h-4 w-4"
             />
             <Label htmlFor="billable-manual" className="cursor-pointer">
-              Billable
+              {t("time_entries.billable")}
             </Label>
           </div>
           <Button
@@ -411,7 +415,7 @@ function ManualEntryDialog({
             ) : (
               <Plus className="mr-2 h-4 w-4" />
             )}
-            {isEdit ? "Save Changes" : "Add"}
+            {isEdit ? t("time_entries.save_changes") : t("time_entries.add_btn")}
           </Button>
         </form>
       </DialogContent>
@@ -429,6 +433,7 @@ function ReportTab() {
     sort: "name",
     order: "asc",
   });
+  const { t } = useTranslation();
 
   if (isLoading)
     return (
@@ -479,10 +484,10 @@ function ReportTab() {
               }
             >
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="All Projects" />
+                <SelectValue placeholder={t("time_entries.all_projects")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
+                <SelectItem value="all">{t("time_entries.all_projects")}</SelectItem>
                 {projectsData?.projects.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
@@ -499,7 +504,7 @@ function ReportTab() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Duration
+              {t("time_entries.total_duration")}
             </CardTitle>
             <Clock className="h-5 w-5 text-blue-500" />
           </CardHeader>
@@ -507,13 +512,13 @@ function ReportTab() {
             <p className="text-2xl font-bold">
               {minutesToLabel(report.total_minutes)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">All entries</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("time_entries.all_entries")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Billable Duration
+              {t("time_entries.billable_duration")}
             </CardTitle>
             <Timer className="h-5 w-5 text-emerald-500" />
           </CardHeader>
@@ -525,14 +530,14 @@ function ReportTab() {
               {report.total_minutes > 0
                 ? `${Math.round((report.total_billable_minutes / report.total_minutes) * 100)}%`
                 : "—"}{" "}
-              billable
+              {t("time_entries.billable_pct")}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
+              {t("time_entries.total_revenue")}
             </CardTitle>
             <TrendingUp className="h-5 w-5 text-purple-500" />
           </CardHeader>
@@ -541,7 +546,7 @@ function ReportTab() {
               {formatCurrency(report.total_revenue)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Based on hourly rate
+              {t("time_entries.based_on_rate")}
             </p>
           </CardContent>
         </Card>
@@ -551,18 +556,20 @@ function ReportTab() {
       {report.projects.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Project Breakdown</CardTitle>
-            <CardDescription>{report.projects.length} {report.projects.length === 1 ? "project" : "projects"}</CardDescription>
+            <CardTitle className="text-lg">{t("time_entries.project_breakdown")}</CardTitle>
+            <CardDescription>
+              {t(report.projects.length === 1 ? "projects.projects_found_one" : "projects.projects_found_other", { count: report.projects.length })}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Total Duration</TableHead>
-                    <TableHead>Billable</TableHead>
-                    <TableHead>Revenue</TableHead>
+                    <TableHead>{t("time_entries.col_project")}</TableHead>
+                    <TableHead>{t("time_entries.col_total_duration")}</TableHead>
+                    <TableHead>{t("time_entries.col_billable")}</TableHead>
+                    <TableHead>{t("time_entries.col_revenue")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -605,9 +612,10 @@ export default function TimeEntriesPage() {
   const [manualOpen, setManualOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const deleteEntry = useDeleteTimeEntry();
+  const { t } = useTranslation();
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this time entry?")) {
+    if (confirm(t("time_entries.confirm_delete"))) {
       deleteEntry.mutate(id);
     }
   };
@@ -623,10 +631,10 @@ export default function TimeEntriesPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                Time Entries
+                {t("time_entries.title")}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Track time spent on your projects
+                {t("time_entries.subtitle")}
               </p>
             </div>
           </div>
@@ -639,7 +647,7 @@ export default function TimeEntriesPage() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Manual
+              {t("time_entries.add_manual")}
             </Button>
             <StartTimerDialog />
           </div>
@@ -653,7 +661,7 @@ export default function TimeEntriesPage() {
           <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="report" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Report & Analytics
+              {t("time_entries.tab_report")}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="report" className="mt-4">
@@ -677,7 +685,7 @@ export default function TimeEntriesPage() {
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Deleting...</span>
+            <span>{t("common.deleting")}</span>
           </div>
         </div>
       )}
