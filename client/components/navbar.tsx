@@ -27,7 +27,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -77,11 +77,6 @@ export function Navbar() {
   const { data: user } = useUser();
   const logout = useLogout();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Sayfa değişince mobil menüyü kapat
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -204,7 +199,7 @@ export function Navbar() {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}>
                 <Button
                   variant={isActive ? "secondary" : "ghost"}
                   size="sm"
