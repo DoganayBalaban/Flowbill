@@ -14,6 +14,7 @@ import {
   useRecentActivity,
   useRevenueChart,
 } from "@/lib/hooks/useDashboard";
+import { useTranslation } from "@/lib/i18n/context";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2, Mail, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const queryClient = useQueryClient();
   const { data: user, isLoading: userLoading, error } = useUser();
   const resendVerification = useResendVerification();
+  const { t, locale } = useTranslation();
 
   // Dashboard data hooks (AP: 5 min staleTime)
   const stats = useDashboardStats();
@@ -69,7 +71,7 @@ export default function DashboardPage() {
 
   // Last data update timestamp
   const lastUpdated = stats.dataUpdatedAt
-    ? new Date(stats.dataUpdatedAt).toLocaleTimeString("en-US", {
+    ? new Date(stats.dataUpdatedAt).toLocaleTimeString(locale === "tr" ? "tr-TR" : "en-US", {
         hour: "2-digit",
         minute: "2-digit",
       })
@@ -85,10 +87,10 @@ export default function DashboardPage() {
               <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                  Email Not Verified
+                  {t("dashboard.email_not_verified")}
                 </h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                  Please verify your email address to access all features.
+                  {t("dashboard.verify_email_desc")}
                 </p>
                 <Button
                   variant="outline"
@@ -102,11 +104,11 @@ export default function DashboardPage() {
                   ) : (
                     <Mail className="mr-2 h-4 w-4" />
                   )}
-                  Resend Verification Email
+                  {t("dashboard.resend_verification")}
                 </Button>
                 {resendVerification.isSuccess && (
                   <p className="text-sm text-green-600 mt-2">
-                    Verification email sent!
+                    {t("dashboard.verification_sent")}
                   </p>
                 )}
               </div>
@@ -119,16 +121,16 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Welcome back, {user.first_name}!
+            {t("dashboard.welcome", { name: user.first_name ?? "" })}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Here&apos;s your overview for this month
+            {t("dashboard.overview")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {lastUpdated && (
             <span className="text-xs text-muted-foreground">
-              Updated at {lastUpdated}
+              {t("dashboard.updated_at", { time: lastUpdated })}
             </span>
           )}
           <Button
@@ -140,7 +142,7 @@ export default function DashboardPage() {
             <RefreshCw
               className={`h-3.5 w-3.5 ${stats.isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("dashboard.refresh")}
           </Button>
         </div>
       </div>
