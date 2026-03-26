@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { RevenueChartItem } from "@/lib/api/dashboard";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   Area,
   AreaChart,
@@ -24,23 +25,13 @@ interface RevenueChartProps {
   isLoading: boolean;
 }
 
-function formatMonth(month: string): string {
+function formatMonth(month: string, locale: string): string {
   const [year, m] = month.split("-");
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${months[parseInt(m) - 1]} ${year.slice(2)}`;
+  const date = new Date(parseInt(year), parseInt(m) - 1, 1);
+  return date.toLocaleDateString(locale === "tr" ? "tr-TR" : "en-US", {
+    month: "short",
+    year: "2-digit",
+  });
 }
 
 function formatCurrency(value: number): string {
@@ -54,17 +45,19 @@ function CustomTooltip({
   active,
   payload,
   label,
+  locale,
 }: {
   active?: boolean;
   payload?: Array<{ value: number }>;
   label?: string;
+  locale: string;
 }) {
   if (!active || !payload || !payload.length) return null;
 
   return (
     <div className="rounded-lg border bg-background/95 backdrop-blur-sm px-3 py-2 shadow-xl">
       <p className="text-xs text-muted-foreground mb-1">
-        {label ? formatMonth(label) : ""}
+        {label ? formatMonth(label, locale) : ""}
       </p>
       <p className="text-sm font-bold">
         {new Intl.NumberFormat("en-US", {
@@ -78,18 +71,20 @@ function CustomTooltip({
 }
 
 export function RevenueChart({ data, isLoading }: RevenueChartProps) {
+  const { t, locale } = useTranslation();
+
   return (
     <Card className="border transition-all duration-300 hover:shadow-lg">
       <CardHeader>
-        <CardTitle className="text-lg">Revenue Trend</CardTitle>
-        <CardDescription>Last 12 months of revenue</CardDescription>
+        <CardTitle className="text-lg">{t("dashboard.revenue_trend")}</CardTitle>
+        <CardDescription>{t("dashboard.revenue_last_12")}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-[300px] w-full rounded-lg" />
         ) : !data || data.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            No revenue data yet
+            {t("dashboard.no_revenue")}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
@@ -124,7 +119,7 @@ export function RevenueChart({ data, isLoading }: RevenueChartProps) {
               />
               <XAxis
                 dataKey="month"
-                tickFormatter={formatMonth}
+                tickFormatter={(v) => formatMonth(v, locale)}
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
@@ -137,7 +132,7 @@ export function RevenueChart({ data, isLoading }: RevenueChartProps) {
                 tickLine={false}
                 width={60}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip locale={locale} />} />
               <Area
                 type="monotone"
                 dataKey="revenue"

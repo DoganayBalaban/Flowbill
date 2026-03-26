@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClients } from "@/lib/hooks/useClients";
+import { useTranslation } from "@/lib/i18n/context";
 import { Crown, TrendingUp, Users } from "lucide-react";
 
 function formatCurrency(value: number): string {
@@ -21,6 +22,7 @@ function formatCurrency(value: number): string {
 }
 
 export function TopClients() {
+  const { t } = useTranslation();
   const { data, isLoading } = useClients({
     sort: "created_at",
     order: "desc",
@@ -29,7 +31,6 @@ export function TopClients() {
 
   const clients = data?.clients || [];
 
-  // Sort by total_revenue descending on the client side
   const sortedClients = [...clients].sort(
     (a, b) => (b.total_revenue || 0) - (a.total_revenue || 0),
   );
@@ -39,9 +40,9 @@ export function TopClients() {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Crown className="h-5 w-5 text-amber-500" />
-          Top Clients
+          {t("dashboard.top_clients_title")}
         </CardTitle>
-        <CardDescription>Clients by total revenue</CardDescription>
+        <CardDescription>{t("dashboard.top_clients_desc")}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -62,26 +63,25 @@ export function TopClients() {
             <div className="p-3 rounded-full bg-muted mb-3">
               <Users className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="text-sm font-medium">No clients yet</p>
+            <p className="text-sm font-medium">{t("dashboard.no_top_clients")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Add your first client to get started
+              {t("dashboard.no_top_clients_desc")}
             </p>
           </div>
         ) : (
           <div className="space-y-2">
             {sortedClients.map((client, index) => {
-              // Calculate the max revenue for relative bar width
               const maxRevenue = sortedClients[0]?.total_revenue || 1;
               const percentage = Math.round(
                 ((client.total_revenue || 0) / maxRevenue) * 100,
               );
+              const projectCount = client._count?.projects || 0;
 
               return (
                 <div
                   key={client.id}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors group"
                 >
-                  {/* Rank indicator */}
                   <div
                     className={`flex items-center justify-center h-9 w-9 rounded-full shrink-0 text-sm font-bold
                       ${
@@ -105,7 +105,6 @@ export function TopClients() {
                         {client.company}
                       </p>
                     )}
-                    {/* Tiny bar chart */}
                     <div className="mt-1 h-1 w-full bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-emerald-500 rounded-full transition-all duration-700"
@@ -119,7 +118,9 @@ export function TopClients() {
                     </p>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground justify-end">
                       <TrendingUp className="h-3 w-3" />
-                      {client._count?.projects || 0} {(client._count?.projects || 0) === 1 ? "project" : "projects"}
+                      {projectCount === 1
+                        ? t("dashboard.projects_count_one", { count: projectCount })
+                        : t("dashboard.projects_count_other", { count: projectCount })}
                     </div>
                   </div>
                 </div>

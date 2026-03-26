@@ -130,7 +130,7 @@ export default function Home() {
 
           <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-tight md:text-7xl leading-[1.08] mb-6">
             Run your freelance business.{" "}
-            <span className="bg-gradient-to-r from-violet-600 to-indigo-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-violet-600 to-indigo-500 bg-clip-text text-transparent font-[family-name:var(--font-playfair)] italic">
               Not spreadsheets.
             </span>
           </h1>

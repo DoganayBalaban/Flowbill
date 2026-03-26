@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DashboardStats } from "@/lib/api/dashboard";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   AlertTriangle,
   ArrowDown,
@@ -31,6 +32,8 @@ function formatHours(value: number): string {
 }
 
 export function StatsCards({ data, isLoading }: StatsCardsProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -51,40 +54,40 @@ export function StatsCards({ data, isLoading }: StatsCardsProps) {
 
   const cards = [
     {
-      title: "Monthly Revenue",
+      title: t("dashboard.stat_monthly_revenue"),
       value: formatCurrency(data.monthlyRevenue),
       icon: DollarSign,
       growth: data.growthPercentage,
-      description: "vs. previous month",
+      description: t("dashboard.stat_vs_prev_month"),
       gradient: "from-emerald-500/10 to-emerald-500/5",
       iconColor: "text-emerald-600 dark:text-emerald-400",
       borderColor: "border-emerald-500/20",
     },
     {
-      title: "Hours Tracked",
+      title: t("dashboard.stat_hours_tracked"),
       value: formatHours(data.totalHours),
       icon: Clock,
-      subtitle: `${formatHours(data.billableHours)} billable`,
+      subtitle: t("dashboard.stat_billable", { hours: formatHours(data.billableHours) }),
       gradient: "from-blue-500/10 to-blue-500/5",
       iconColor: "text-blue-600 dark:text-blue-400",
       borderColor: "border-blue-500/20",
     },
     {
-      title: "Active Projects",
+      title: t("dashboard.stat_active_projects"),
       value: data.activeProjects.toString(),
       icon: FolderOpen,
-      description: "In progress",
+      description: t("dashboard.stat_in_progress"),
       gradient: "from-violet-500/10 to-violet-500/5",
       iconColor: "text-violet-600 dark:text-violet-400",
       borderColor: "border-violet-500/20",
     },
     {
-      title: "Outstanding",
+      title: t("dashboard.stat_outstanding"),
       value: formatCurrency(data.pendingAmount),
       icon: AlertTriangle,
       badge:
         data.overdueInvoices > 0
-          ? `${data.overdueInvoices} overdue`
+          ? t("dashboard.stat_overdue_badge", { count: data.overdueInvoices })
           : undefined,
       gradient: "from-amber-500/10 to-amber-500/5",
       iconColor: "text-amber-600 dark:text-amber-400",
