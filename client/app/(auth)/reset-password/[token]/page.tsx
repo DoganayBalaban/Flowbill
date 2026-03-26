@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResetPassword } from "@/lib/hooks/useAuth";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   ResetPasswordInput,
   resetPasswordSchema,
@@ -97,6 +98,7 @@ export default function ResetPasswordPage() {
   const token = params.token as string;
   const [success, setSuccess] = useState(false);
   const resetPassword = useResetPassword();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -120,12 +122,12 @@ export default function ResetPasswordPage() {
   const strengthCount = Object.values(passwordChecks).filter(Boolean).length;
   const strengthLabel =
     strengthCount <= 1
-      ? { text: "Weak", color: "bg-red-500" }
+      ? { text: t("auth.strength_weak"), color: "bg-red-500" }
       : strengthCount <= 3
-        ? { text: "Fair", color: "bg-amber-500" }
+        ? { text: t("auth.strength_fair"), color: "bg-amber-500" }
         : strengthCount === 4
-          ? { text: "Good", color: "bg-blue-500" }
-          : { text: "Strong", color: "bg-emerald-500" };
+          ? { text: t("auth.strength_good"), color: "bg-blue-500" }
+          : { text: t("auth.strength_strong"), color: "bg-emerald-500" };
 
   const onSubmit = (data: ResetPasswordInput) => {
     resetPassword.mutate(
@@ -184,11 +186,10 @@ export default function ResetPasswordPage() {
 
             <div className="space-y-2">
               <h2 className="text-2xl font-bold tracking-tight">
-                Password updated
+                {t("auth.password_updated")}
               </h2>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Your password has been changed successfully. You can now sign in
-                with your new password.
+                {t("auth.password_updated_desc")}
               </p>
             </div>
 
@@ -197,7 +198,7 @@ export default function ResetPasswordPage() {
               className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-500/20"
             >
               <Link href="/login">
-                Sign in to your account
+                {t("auth.sign_in_account")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -235,10 +236,10 @@ export default function ResetPasswordPage() {
             </div>
             <div className="space-y-1">
               <h2 className="text-2xl font-bold tracking-tight">
-                Set a new password
+                {t("auth.set_new_password")}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Must be different from your previous password.
+                {t("auth.set_new_password_desc")}
               </p>
             </div>
           </div>
@@ -248,13 +249,13 @@ export default function ResetPasswordPage() {
               <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {(resetPassword.error as any).response?.data?.message ||
-                  "Reset link is invalid or has expired. Please request a new one."}
+                  t("auth.error_reset_expired")}
               </div>
             )}
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">
-                New password
+                {t("auth.new_password")}
               </Label>
               <Input
                 id="password"
@@ -291,20 +292,11 @@ export default function ResetPasswordPage() {
 
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                     {[
-                      { ok: passwordChecks.length, label: "8+ characters" },
-                      {
-                        ok: passwordChecks.uppercase,
-                        label: "Uppercase letter",
-                      },
-                      {
-                        ok: passwordChecks.lowercase,
-                        label: "Lowercase letter",
-                      },
-                      { ok: passwordChecks.number, label: "Number" },
-                      {
-                        ok: passwordChecks.special,
-                        label: "Special character",
-                      },
+                      { ok: passwordChecks.length, label: t("auth.check_8_chars") },
+                      { ok: passwordChecks.uppercase, label: t("auth.check_uppercase") },
+                      { ok: passwordChecks.lowercase, label: t("auth.check_lowercase") },
+                      { ok: passwordChecks.number, label: t("auth.check_number") },
+                      { ok: passwordChecks.special, label: t("auth.check_special") },
                     ].map((c) => (
                       <div
                         key={c.label}
@@ -327,7 +319,7 @@ export default function ResetPasswordPage() {
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirm password
+                {t("auth.confirm_password")}
               </Label>
               <Input
                 id="confirmPassword"
@@ -351,18 +343,18 @@ export default function ResetPasswordPage() {
               {resetPassword.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "Update password"
+                t("auth.update_password")
               )}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            Remember your password?{" "}
+            {t("auth.remember_password")}{" "}
             <Link
               href="/login"
               className="font-medium text-violet-600 hover:text-violet-700 hover:underline transition-colors"
             >
-              Sign in
+              {t("auth.sign_in")}
             </Link>
           </p>
         </div>

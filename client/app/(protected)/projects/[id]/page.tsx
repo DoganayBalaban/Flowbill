@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Attachment, Task } from "@/lib/api/projects";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   useAddProjectAttachment,
   useDeleteProjectAttachment,
@@ -89,22 +90,8 @@ import { useEffect, useRef, useState } from "react";
 // Kanban task item type (Task + column field for drag-and-drop)
 type KanbanTaskItem = Task & KanbanItem;
 
-// Status helpers
-function getStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    active: "Active",
-    completed: "Completed",
-    on_hold: "On Hold",
-    cancelled: "Cancelled",
-  };
-  return map[status] || status;
-}
-
 function getStatusVariant(status: string) {
-  const map: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
+  const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     active: "default",
     completed: "secondary",
     on_hold: "outline",
@@ -113,20 +100,8 @@ function getStatusVariant(status: string) {
   return map[status] || "secondary";
 }
 
-function getTaskStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    todo: "To Do",
-    in_progress: "In Progress",
-    done: "Done",
-  };
-  return map[status] || status;
-}
-
 function getTaskStatusVariant(status: string) {
-  const map: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
+  const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     todo: "outline",
     in_progress: "default",
     done: "secondary",
@@ -134,20 +109,8 @@ function getTaskStatusVariant(status: string) {
   return map[status] || "secondary";
 }
 
-function getPriorityLabel(priority: string) {
-  const map: Record<string, string> = {
-    low: "Low",
-    medium: "Medium",
-    high: "High",
-  };
-  return map[priority] || priority;
-}
-
 function getPriorityVariant(priority: string) {
-  const map: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
+  const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     low: "outline",
     medium: "secondary",
     high: "destructive",
@@ -157,19 +120,12 @@ function getPriorityVariant(priority: string) {
 
 function formatCurrency(amount: number | null | undefined) {
   if (amount == null) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(Number(amount));
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(amount));
 }
 
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return "—";
-  return new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(dateStr));
+  return new Intl.DateTimeFormat("en-US", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(dateStr));
 }
 
 function formatDuration(minutes: number | null | undefined) {
@@ -185,6 +141,7 @@ export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
   const projectId = params.id as string;
+  const { t } = useTranslation();
 
   const { data: project, isLoading, error } = useProject(projectId);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -205,10 +162,10 @@ export default function ProjectDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-destructive font-medium">Project not found</p>
+          <p className="text-destructive font-medium">{t("projects.project_not_found")}</p>
           <Button variant="outline" onClick={() => router.push("/projects")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Projects
+            {t("projects.back_to_projects")}
           </Button>
         </div>
       </div>
@@ -221,27 +178,18 @@ export default function ProjectDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/projects")}
-            >
+            <Button variant="ghost" size="icon" onClick={() => router.push("/projects")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-3">
               {project.color && (
-                <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: project.color }}
-                />
+                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: project.color }} />
               )}
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  {project.name}
-                </h1>
+                <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
                 <div className="flex items-center gap-2 mt-0.5">
                   <Badge variant={getStatusVariant(project.status)}>
-                    {getStatusLabel(project.status)}
+                    {t(`projects.status_${project.status}`)}
                   </Badge>
                   {project.client && (
                     <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -255,7 +203,7 @@ export default function ProjectDetailPage() {
           </div>
           <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Edit
+            {t("common.edit")}
           </Button>
         </div>
 
@@ -264,54 +212,26 @@ export default function ProjectDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <FolderOpen className="h-5 w-5" />
-              Project Details
+              {t("projects.project_details")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <InfoItem
-                icon={<DollarSign className="h-4 w-4" />}
-                label="Budget"
-                value={formatCurrency(project.budget)}
-              />
-              <InfoItem
-                icon={<Clock className="h-4 w-4" />}
-                label="Hourly Rate"
-                value={
-                  project.hourly_rate
-                    ? formatCurrency(project.hourly_rate)
-                    : null
-                }
-              />
-              <InfoItem
-                icon={<Calendar className="h-4 w-4" />}
-                label="Start Date"
-                value={formatDate(project.start_date)}
-              />
-              <InfoItem
-                icon={<Calendar className="h-4 w-4" />}
-                label="Deadline"
-                value={formatDate(project.deadline)}
-              />
-              <InfoItem
-                icon={<TrendingUp className="h-4 w-4" />}
-                label="Total Billed"
-                value={formatCurrency(project.total_billed)}
-              />
+              <InfoItem icon={<DollarSign className="h-4 w-4" />} label={t("projects.col_budget")} value={formatCurrency(project.budget)} />
+              <InfoItem icon={<Clock className="h-4 w-4" />} label={t("clients.col_hourly_rate")} value={project.hourly_rate ? formatCurrency(project.hourly_rate) : null} />
+              <InfoItem icon={<Calendar className="h-4 w-4" />} label={t("clients.col_start_date")} value={formatDate(project.start_date)} />
+              <InfoItem icon={<Calendar className="h-4 w-4" />} label={t("projects.col_deadline")} value={formatDate(project.deadline)} />
+              <InfoItem icon={<TrendingUp className="h-4 w-4" />} label={t("projects.col_total_billed")} value={formatCurrency(project.total_billed)} />
               <InfoItem
                 icon={<Timer className="h-4 w-4" />}
-                label="Total Tracked Hours"
-                value={
-                  project.total_tracked_hours
-                    ? `${Number(project.total_tracked_hours).toFixed(1)} hrs`
-                    : null
-                }
+                label={t("projects.col_total_tracked_hours")}
+                value={project.total_tracked_hours ? `${Number(project.total_tracked_hours).toFixed(1)} hrs` : null}
               />
               {project.description && (
                 <div className="sm:col-span-2 lg:col-span-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <FolderOpen className="h-4 w-4" />
-                    Description
+                    {t("projects.col_description")}
                   </div>
                   <p className="text-sm">{project.description}</p>
                 </div>
@@ -325,22 +245,19 @@ export default function ProjectDetailPage() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="tasks" className="flex items-center gap-2">
               <ListTodo className="h-4 w-4" />
-              Tasks
+              {t("projects.tab_tasks")}
             </TabsTrigger>
-            <TabsTrigger
-              value="time-entries"
-              className="flex items-center gap-2"
-            >
+            <TabsTrigger value="time-entries" className="flex items-center gap-2">
               <Timer className="h-4 w-4" />
-              Time Entries
+              {t("projects.tab_time_entries")}
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Statistics
+              {t("projects.tab_statistics")}
             </TabsTrigger>
             <TabsTrigger value="attachments" className="flex items-center gap-2">
               <Paperclip className="h-4 w-4" />
-              Files
+              {t("projects.tab_files")}
             </TabsTrigger>
           </TabsList>
 
@@ -359,25 +276,12 @@ export default function ProjectDetailPage() {
         </Tabs>
       </div>
 
-      <ProjectFormDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        project={project}
-      />
+      <ProjectFormDialog open={editDialogOpen} onOpenChange={setEditDialogOpen} project={project} />
     </div>
   );
 }
 
-// Info item component
-function InfoItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | null | undefined;
-}) {
+function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | null | undefined }) {
   return (
     <div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
@@ -389,8 +293,8 @@ function InfoItem({
   );
 }
 
-// Tasks Tab — Kanban Board
 function TasksTab({ projectId }: { projectId: string }) {
+  const { t } = useTranslation();
   const { data: tasks, isLoading } = useProjectTasks(projectId);
   const updateTask = useUpdateTask(projectId);
   const deleteTask = useDeleteTask(projectId);
@@ -398,36 +302,25 @@ function TasksTab({ projectId }: { projectId: string }) {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const columns: KanbanColumn[] = [
-    { id: "todo", name: "To Do", color: "#6B7280" },
-    { id: "in_progress", name: "In Progress", color: "#F59E0B" },
-    { id: "done", name: "Done", color: "#10B981" },
+    { id: "todo", name: t("projects.task_status_todo"), color: "#6B7280" },
+    { id: "in_progress", name: t("projects.task_status_in_progress"), color: "#F59E0B" },
+    { id: "done", name: t("projects.task_status_done"), color: "#10B981" },
   ];
 
-  // Map tasks to kanban items
-  const kanbanItems: KanbanTaskItem[] = (tasks || []).map((t) => ({
-    ...t,
-    column: t.status,
-  }));
-
+  const kanbanItems: KanbanTaskItem[] = (tasks || []).map((task) => ({ ...task, column: task.status }));
   const [items, setItems] = useState<KanbanTaskItem[]>(kanbanItems);
 
-  // Sync when tasks change
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setItems((tasks || []).map((t) => ({ ...t, column: t.status })));
+    setItems((tasks || []).map((task) => ({ ...task, column: task.status })));
   }, [tasks]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active } = event;
     const draggedItem = items.find((i) => i.id === active.id);
     if (!draggedItem) return;
-
-    // If the column changed, call the update API
     if (draggedItem.column !== draggedItem.status) {
-      updateTask.mutate({
-        id: draggedItem.id,
-        data: { status: draggedItem.column as "todo" | "in_progress" | "done" },
-      });
+      updateTask.mutate({ id: draggedItem.id, data: { status: draggedItem.column as "todo" | "in_progress" | "done" } });
     }
   };
 
@@ -437,7 +330,7 @@ function TasksTab({ projectId }: { projectId: string }) {
   };
 
   const handleDelete = (taskId: string) => {
-    if (confirm("Are you sure you want to delete this task?")) {
+    if (confirm(t("projects.confirm_delete_task"))) {
       deleteTask.mutate(taskId);
     }
   };
@@ -463,101 +356,68 @@ function TasksTab({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ListTodo className="h-5 w-5" />
-          <h3 className="font-semibold">Tasks</h3>
+          <h3 className="font-semibold">{t("projects.tasks_label")}</h3>
           <span className="text-sm text-muted-foreground">
-            ({items.length} {items.length === 1 ? "task" : "tasks"})
+            ({items.length} {items.length === 1
+              ? t("projects.projects_found_one", { count: "1" }).replace("1 project", "1 task")
+              : `${items.length}`})
           </span>
         </div>
         <Button size="sm" onClick={() => setTaskDialogOpen(true)}>
           <Plus className="mr-1 h-4 w-4" />
-          Add Task
+          {t("projects.add_task")}
         </Button>
       </div>
 
-      {/* Kanban Board */}
-      <KanbanProvider
-        columns={columns}
-        data={items}
-        onDataChange={setItems}
-        onDragEnd={handleDragEnd}
-      >
+      <KanbanProvider columns={columns} data={items} onDataChange={setItems} onDragEnd={handleDragEnd}>
         {(column) => {
           const columnItems = items.filter((i) => i.column === column.id);
           return (
             <KanbanBoard id={column.id} key={column.id}>
               <KanbanHeader count={columnItems.length}>
                 <div className="flex items-center gap-2">
-                  <div
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: column.color }}
-                  />
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: column.color }} />
                   <span>{column.name}</span>
                 </div>
               </KanbanHeader>
               <KanbanCards id={column.id} items={items}>
                 {(item: KanbanTaskItem) => (
-                  <KanbanCard
-                    column={column.id}
-                    id={item.id}
-                    key={item.id}
-                    name={item.title}
-                  >
+                  <KanbanCard column={column.id} id={item.id} key={item.id} name={item.title}>
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-sm leading-tight">
-                          {item.title}
-                        </p>
+                        <p className="font-medium text-sm leading-tight">{item.title}</p>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 shrink-0"
-                              onClick={(e) => e.stopPropagation()}
-                            >
+                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={(e) => e.stopPropagation()}>
                               <MoreHorizontal className="h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(item);
-                              }}
-                            >
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(item); }}>
                               <Pencil className="mr-2 h-3.5 w-3.5" />
-                              Edit
+                              {t("common.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(item.id);
-                              }}
+                              onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
                             >
                               <Trash2 className="mr-2 h-3.5 w-3.5" />
-                              Delete
+                              {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
 
                       {item.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {item.description}
-                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
                       )}
 
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge
-                          variant={getPriorityVariant(item.priority)}
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {getPriorityLabel(item.priority)}
+                        <Badge variant={getPriorityVariant(item.priority)} className="text-[10px] px-1.5 py-0">
+                          {t(`projects.priority_${item.priority}`)}
                         </Badge>
                         {item.due_date && (
                           <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -581,20 +441,13 @@ function TasksTab({ projectId }: { projectId: string }) {
         }}
       </KanbanProvider>
 
-      {/* Task Form Dialog */}
-      <TaskFormDialog
-        open={taskDialogOpen}
-        onOpenChange={handleDialogClose}
-        projectId={projectId}
-        task={editingTask}
-      />
+      <TaskFormDialog open={taskDialogOpen} onOpenChange={handleDialogClose} projectId={projectId} task={editingTask} />
 
-      {/* Delete loading */}
       {deleteTask.isPending && (
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Deleting...</span>
+            <span>{t("common.deleting")}</span>
           </div>
         </div>
       )}
@@ -602,8 +455,8 @@ function TasksTab({ projectId }: { projectId: string }) {
   );
 }
 
-// Time Entries Tab
 function TimeEntriesTab({ projectId }: { projectId: string }) {
+  const { t } = useTranslation();
   const { data: entries, isLoading } = useProjectTimeEntries(projectId);
 
   if (isLoading) {
@@ -626,9 +479,7 @@ function TimeEntriesTab({ projectId }: { projectId: string }) {
         <CardContent className="pt-6">
           <div className="text-center py-12 space-y-2">
             <Timer className="mx-auto h-10 w-10 text-muted-foreground/50" />
-            <p className="text-muted-foreground">
-              No time entries for this project.
-            </p>
+            <p className="text-muted-foreground">{t("projects.no_time_entries_for_project")}</p>
           </div>
         </CardContent>
       </Card>
@@ -638,36 +489,32 @@ function TimeEntriesTab({ projectId }: { projectId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Time Entries</CardTitle>
-        <CardDescription>{entries.length} {entries.length === 1 ? "entry" : "entries"} found</CardDescription>
+        <CardTitle className="text-lg">{t("projects.tab_time_entries")}</CardTitle>
+        <CardDescription>
+          {entries.length === 1
+            ? t("clients.stat_time_entries", { count: "1" })
+            : t("clients.stat_time_entries", { count: String(entries.length) })}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="hidden md:table-cell">Task</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Billable
-                </TableHead>
-                <TableHead className="hidden lg:table-cell">
-                  Hourly Rate
-                </TableHead>
+                <TableHead>{t("expenses.col_date")}</TableHead>
+                <TableHead>{t("expenses.col_description")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("projects.tab_tasks")}</TableHead>
+                <TableHead>{t("clients.col_duration")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("time_entries.col_billable")}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t("clients.col_hourly_rate")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {entries.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell className="font-medium">
-                    {formatDate(entry.date)}
-                  </TableCell>
+                  <TableCell className="font-medium">{formatDate(entry.date)}</TableCell>
                   <TableCell>
-                    <span className="line-clamp-1">
-                      {entry.description || "—"}
-                    </span>
+                    <span className="line-clamp-1">{entry.description || "—"}</span>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {entry.task ? (
@@ -676,19 +523,15 @@ function TimeEntriesTab({ projectId }: { projectId: string }) {
                       <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </TableCell>
-                  <TableCell>
-                    {formatDuration(entry.duration_minutes)}
-                  </TableCell>
+                  <TableCell>{formatDuration(entry.duration_minutes)}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     {entry.billable ? (
-                      <Badge variant="default">Yes</Badge>
+                      <Badge variant="default">{t("expenses.yes")}</Badge>
                     ) : (
-                      <Badge variant="outline">No</Badge>
+                      <Badge variant="outline">{t("expenses.no")}</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {formatCurrency(entry.hourly_rate)}
-                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">{formatCurrency(entry.hourly_rate)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -699,8 +542,8 @@ function TimeEntriesTab({ projectId }: { projectId: string }) {
   );
 }
 
-// Stats Tab
 function StatsTab({ projectId }: { projectId: string }) {
+  const { t } = useTranslation();
   const { data: stats, isLoading } = useProjectStats(projectId);
 
   if (isLoading) {
@@ -719,9 +562,7 @@ function StatsTab({ projectId }: { projectId: string }) {
         <CardContent className="pt-6">
           <div className="text-center py-12 space-y-2">
             <TrendingUp className="mx-auto h-10 w-10 text-muted-foreground/50" />
-            <p className="text-muted-foreground">
-              Could not load statistics.
-            </p>
+            <p className="text-muted-foreground">{t("projects.could_not_load_stats")}</p>
           </div>
         </CardContent>
       </Card>
@@ -734,89 +575,76 @@ function StatsTab({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-4">
-      {/* Task Distribution */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <ListTodo className="h-5 w-5" />
-            Task Distribution
+            {t("projects.task_distribution")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium">
-                {tasksDone}/{tasksTotal} completed
-              </span>
+              <span className="text-muted-foreground">{t("projects.progress_label")}</span>
+              <span className="font-medium">{tasksDone}/{tasksTotal} {t("projects.completed_label")}</span>
             </div>
             <Progress value={taskProgress} className="h-2" />
             <div className="grid grid-cols-3 gap-4 pt-2">
               <div className="text-center">
                 <p className="text-2xl font-bold">{stats.tasks.todo ?? 0}</p>
-                <p className="text-xs text-muted-foreground">To Do</p>
+                <p className="text-xs text-muted-foreground">{t("projects.task_status_todo")}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">
-                  {stats.tasks.in_progress ?? 0}
-                </p>
-                <p className="text-xs text-muted-foreground">In Progress</p>
+                <p className="text-2xl font-bold">{stats.tasks.in_progress ?? 0}</p>
+                <p className="text-xs text-muted-foreground">{t("projects.task_status_in_progress")}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{tasksDone}</p>
-                <p className="text-xs text-muted-foreground">Completed</p>
+                <p className="text-xs text-muted-foreground">{t("projects.task_status_done")}</p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title="Total Time Entries"
+          title={t("projects.stat_total_time_entries")}
           value={stats.time.total_entries.toString()}
-          description="Recorded time entries"
+          description={t("projects.stat_recorded_entries")}
           icon={<Timer className="h-5 w-5 text-blue-500" />}
         />
         <StatCard
-          title="Total Hours"
+          title={t("projects.stat_total_hours")}
           value={`${stats.time.total_hours.toFixed(1)} hrs`}
-          description="Total tracked duration"
+          description={t("projects.stat_total_tracked_duration")}
           icon={<Clock className="h-5 w-5 text-emerald-500" />}
         />
         <StatCard
-          title="Billable Hours"
+          title={t("projects.stat_billable_hours")}
           value={`${stats.time.billable_hours.toFixed(1)} hrs`}
-          description="Billable duration"
+          description={t("projects.stat_billable_duration")}
           icon={<CheckCircle2 className="h-5 w-5 text-purple-500" />}
         />
         <StatCard
-          title="Total Expenses"
+          title={t("expenses.stat_total")}
           value={formatCurrency(stats.expenses.total_amount)}
-          description={`${stats.expenses.total_count} expense ${stats.expenses.total_count === 1 ? "record" : "records"}`}
+          description={t("projects.stat_expense_records", { count: String(stats.expenses.total_count) })}
           icon={<Receipt className="h-5 w-5 text-amber-500" />}
         />
         <StatCard
-          title="Total Billed"
+          title={t("projects.col_total_billed")}
           value={formatCurrency(stats.budget.total_billed)}
-          description="Amount billed"
+          description={t("projects.stat_amount_billed")}
           icon={<Banknote className="h-5 w-5 text-emerald-500" />}
         />
         {stats.budget.budget != null && (
           <StatCard
-            title="Budget Usage"
-            value={
-              stats.budget.budget_used_percent != null
-                ? `${stats.budget.budget_used_percent.toFixed(0)}%`
-                : "—"
-            }
-            description={`Budget: ${formatCurrency(stats.budget.budget)}`}
+            title={t("projects.stat_budget_usage")}
+            value={stats.budget.budget_used_percent != null ? `${stats.budget.budget_used_percent.toFixed(0)}%` : "—"}
+            description={t("projects.stat_budget_amount", { amount: formatCurrency(stats.budget.budget) })}
             icon={<DollarSign className="h-5 w-5 text-red-500" />}
-            highlight={
-              stats.budget.budget_used_percent != null &&
-              stats.budget.budget_used_percent > 80
-            }
+            highlight={stats.budget.budget_used_percent != null && stats.budget.budget_used_percent > 80}
           />
         )}
       </div>
@@ -824,8 +652,8 @@ function StatsTab({ projectId }: { projectId: string }) {
   );
 }
 
-// Attachments Tab
 function AttachmentsTab({ projectId }: { projectId: string }) {
+  const { t } = useTranslation();
   const { data: attachments, isLoading } = useProjectAttachments(projectId);
   const addAttachment = useAddProjectAttachment();
   const deleteAttachment = useDeleteProjectAttachment(projectId);
@@ -864,36 +692,29 @@ function AttachmentsTab({ projectId }: { projectId: string }) {
     );
   }
 
+  const count = attachments?.length ?? 0;
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-lg flex items-center gap-2">
             <Paperclip className="h-5 w-5" />
-            Attachments
+            {t("projects.attachments_title")}
           </CardTitle>
           <CardDescription>
-            {attachments?.length ?? 0} file{(attachments?.length ?? 0) !== 1 ? "s" : ""} — max 10 MB per file
+            {t("projects.attachments_desc", { count: String(count) })}
           </CardDescription>
         </div>
         <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <Button
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={addAttachment.isPending}
-          >
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+          <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={addAttachment.isPending}>
             {addAttachment.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Upload className="mr-2 h-4 w-4" />
             )}
-            Upload File
+            {t("projects.upload_file")}
           </Button>
         </div>
       </CardHeader>
@@ -901,21 +722,19 @@ function AttachmentsTab({ projectId }: { projectId: string }) {
         {!attachments || attachments.length === 0 ? (
           <div className="text-center py-12 space-y-2">
             <Paperclip className="mx-auto h-10 w-10 text-muted-foreground/50" />
-            <p className="text-muted-foreground">No attachments yet.</p>
-            <p className="text-xs text-muted-foreground">
-              Upload contracts, briefs, or deliverables to keep everything in one place.
-            </p>
+            <p className="text-muted-foreground">{t("projects.no_attachments")}</p>
+            <p className="text-xs text-muted-foreground">{t("projects.no_attachments_desc")}</p>
           </div>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>File</TableHead>
-                  <TableHead className="hidden sm:table-cell">Type</TableHead>
-                  <TableHead className="hidden md:table-cell">Size</TableHead>
-                  <TableHead className="hidden lg:table-cell">Uploaded</TableHead>
-                  <TableHead className="w-20 text-right">Actions</TableHead>
+                  <TableHead>{t("projects.col_file")}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t("projects.col_type")}</TableHead>
+                  <TableHead className="hidden md:table-cell">{t("projects.col_size")}</TableHead>
+                  <TableHead className="hidden lg:table-cell">{t("projects.col_uploaded")}</TableHead>
+                  <TableHead className="w-20 text-right">{t("expenses.col_actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -924,58 +743,41 @@ function AttachmentsTab({ projectId }: { projectId: string }) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {getFileIcon(att.mime_type)}
-                        <span className="font-medium text-sm truncate max-w-[180px]">
-                          {att.filename}
-                        </span>
+                        <span className="font-medium text-sm truncate max-w-[180px]">{att.filename}</span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-xs text-muted-foreground">
-                        {att.mime_type ?? "—"}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{att.mime_type ?? "—"}</span>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {formatFileSize(att.file_size)}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {formatDate(att.uploaded_at)}
-                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{formatFileSize(att.file_size)}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{formatDate(att.uploaded_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          asChild
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                           <a href={att.file_url} target="_blank" rel="noreferrer" download>
                             <Download className="h-4 w-4" />
                           </a>
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Attachment</AlertDialogTitle>
+                              <AlertDialogTitle>{t("projects.delete_attachment")}</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete &quot;{att.filename}&quot;? This action cannot be undone.
+                                {t("projects.delete_attachment_desc", { filename: att.filename })}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => deleteAttachment.mutate(att.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Delete
+                                {t("common.delete")}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -993,26 +795,15 @@ function AttachmentsTab({ projectId }: { projectId: string }) {
   );
 }
 
-// Stat card component
 function StatCard({
-  title,
-  value,
-  description,
-  icon,
-  highlight = false,
+  title, value, description, icon, highlight = false,
 }: {
-  title: string;
-  value: string;
-  description: string;
-  icon: React.ReactNode;
-  highlight?: boolean;
+  title: string; value: string; description: string; icon: React.ReactNode; highlight?: boolean;
 }) {
   return (
     <Card className={highlight ? "border-amber-500/50" : ""}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         {icon}
       </CardHeader>
       <CardContent>

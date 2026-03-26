@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "@/lib/i18n/context";
 import { Expense, ExpenseCategory, ExpensesQueryParams } from "@/lib/api/expenses";
 import {
   useDeleteExpense,
@@ -81,15 +82,7 @@ function formatDate(dateStr: string | null | undefined) {
   }).format(new Date(dateStr));
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  software: "Software",
-  domain: "Domain",
-  hosting: "Hosting",
-  travel: "Travel",
-  office: "Office",
-  hardware: "Hardware",
-  other: "Other",
-};
+const CATEGORY_KEYS = ["software", "domain", "hosting", "travel", "office", "hardware", "other"] as const;
 
 const CATEGORY_COLORS: Record<string, string> = {
   software: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
@@ -104,6 +97,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 // ── Receipt Upload Cell ─────────────────────────────────────────────────────
 
 function ReceiptCell({ expense }: { expense: Expense }) {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadReceipt = useUploadReceipt();
   const deleteReceipt = useDeleteReceipt();
@@ -114,8 +108,8 @@ function ReceiptCell({ expense }: { expense: Expense }) {
     uploadReceipt.mutate(
       { id: expense.id, file },
       {
-        onSuccess: () => toast.success("Receipt uploaded"),
-        onError: () => toast.error("Failed to upload receipt"),
+        onSuccess: () => toast.success(t("expenses.receipt_uploaded")),
+        onError: () => toast.error(t("expenses.receipt_upload_error")),
       },
     );
     // Reset input so same file can be re-uploaded if needed
@@ -133,7 +127,7 @@ function ReceiptCell({ expense }: { expense: Expense }) {
           onClick={(e) => e.stopPropagation()}
         >
           <ExternalLink className="h-3 w-3" />
-          View
+          {t("expenses.view_receipt")}
         </a>
         <Button
           variant="ghost"
@@ -142,8 +136,8 @@ function ReceiptCell({ expense }: { expense: Expense }) {
           onClick={(e) => {
             e.stopPropagation();
             deleteReceipt.mutate(expense.id, {
-              onSuccess: () => toast.success("Receipt removed"),
-              onError: () => toast.error("Failed to remove receipt"),
+              onSuccess: () => toast.success(t("expenses.receipt_removed")),
+              onError: () => toast.error(t("expenses.receipt_remove_error")),
             });
           }}
           disabled={deleteReceipt.isPending}
@@ -178,7 +172,7 @@ function ReceiptCell({ expense }: { expense: Expense }) {
         ) : (
           <Upload className="mr-1 h-3 w-3" />
         )}
-        Upload
+        {t("expenses.upload_receipt")}
       </Button>
     </>
   );
@@ -187,6 +181,7 @@ function ReceiptCell({ expense }: { expense: Expense }) {
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function ExpensesPage() {
+  const { t } = useTranslation();
   const [params, setParams] = useState<ExpensesQueryParams>({
     page: 1,
     limit: 20,
@@ -209,11 +204,11 @@ export default function ExpensesPage() {
     if (!deleteId) return;
     deleteExpense.mutate(deleteId, {
       onSuccess: () => {
-        toast.success("Expense deleted");
+        toast.success(t("expenses.expense_deleted"));
         setDeleteId(null);
       },
       onError: () => {
-        toast.error("Failed to delete expense");
+        toast.error(t("expenses.expense_delete_error"));
         setDeleteId(null);
       },
     });
@@ -260,15 +255,15 @@ export default function ExpensesPage() {
               <Receipt className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t("expenses.title")}</h1>
               <p className="text-sm text-muted-foreground">
-                Track your business expenses
+                {t("expenses.subtitle")}
               </p>
             </div>
           </div>
           <Button onClick={handleOpenCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            New Expense
+            {t("expenses.new_expense")}
           </Button>
         </div>
 
@@ -280,13 +275,15 @@ export default function ExpensesPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                      Total Expenses
+                      {t("expenses.stat_total")}
                     </p>
                     <p className="text-2xl font-bold mt-1 text-foreground">
                       {formatCurrency(stats.total_expenses)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {stats.expense_count} {stats.expense_count === 1 ? "expense" : "expenses"}
+                      {stats.expense_count === 1
+                        ? t("expenses.expenses_found_one", { count: String(stats.expense_count) })
+                        : t("expenses.expenses_found_other", { count: String(stats.expense_count) })}
                     </p>
                   </div>
                   <Wallet className="h-8 w-8 text-muted-foreground/40" />
@@ -298,13 +295,13 @@ export default function ExpensesPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                      Tax Deductible
+                      {t("expenses.stat_tax_deductible")}
                     </p>
                     <p className="text-2xl font-bold mt-1 text-blue-600 dark:text-blue-400">
                       {formatCurrency(stats.tax_deductible_total)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      of total expenses
+                      {t("expenses.stat_of_total")}
                     </p>
                   </div>
                   <Receipt className="h-8 w-8 text-blue-500/30" />
@@ -316,7 +313,7 @@ export default function ExpensesPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                      Net Profit
+                      {t("expenses.stat_net_profit")}
                     </p>
                     <p
                       className={`text-2xl font-bold mt-1 ${
@@ -328,7 +325,7 @@ export default function ExpensesPage() {
                       {formatCurrency(stats.net_profit)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Revenue: {formatCurrency(stats.total_revenue)}
+                      {t("expenses.stat_revenue", { amount: formatCurrency(stats.total_revenue) })}
                     </p>
                   </div>
                   {stats.net_profit >= 0 ? (
@@ -372,13 +369,13 @@ export default function ExpensesPage() {
                 onValueChange={handleCategoryFilter}
               >
                 <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="All Categories" />
+                  <SelectValue placeholder={t("expenses.all_categories")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
-                    <SelectItem key={val} value={val}>
-                      {label}
+                  <SelectItem value="all">{t("expenses.all_categories")}</SelectItem>
+                  {CATEGORY_KEYS.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {t(`expenses.cat_${key}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -392,12 +389,12 @@ export default function ExpensesPage() {
                 onValueChange={handleTaxFilter}
               >
                 <SelectTrigger className="w-[170px]">
-                  <SelectValue placeholder="Tax Deductible" />
+                  <SelectValue placeholder={t("expenses.tax_deductible")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="true">Tax Deductible</SelectItem>
-                  <SelectItem value="false">Non-deductible</SelectItem>
+                  <SelectItem value="all">{t("expenses.all")}</SelectItem>
+                  <SelectItem value="true">{t("expenses.tax_deductible")}</SelectItem>
+                  <SelectItem value="false">{t("expenses.non_deductible")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -407,11 +404,13 @@ export default function ExpensesPage() {
         {/* Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Expense List</CardTitle>
+            <CardTitle>{t("expenses.expense_list")}</CardTitle>
             <CardDescription>
               {data
-                ? `${data.total} ${data.total === 1 ? "expense" : "expenses"} found`
-                : "Loading..."}
+                ? data.total === 1
+                  ? t("expenses.expenses_found_one", { count: String(data.total) })
+                  : t("expenses.expenses_found_other", { count: String(data.total) })
+                : t("common.loading")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -423,17 +422,17 @@ export default function ExpensesPage() {
               </div>
             ) : error ? (
               <div className="text-center py-10 text-destructive">
-                Failed to load expenses.
+                {t("expenses.failed_to_load")}
               </div>
             ) : data?.expenses.length === 0 ? (
               <div className="text-center py-16 space-y-3">
                 <Receipt className="mx-auto h-12 w-12 text-muted-foreground/50" />
                 <div>
                   <p className="font-medium text-muted-foreground">
-                    No expenses yet
+                    {t("expenses.no_expenses")}
                   </p>
                   <p className="text-sm text-muted-foreground/70">
-                    Start tracking your business expenses.
+                    {t("expenses.no_expenses_desc")}
                   </p>
                 </div>
                 <Button
@@ -442,7 +441,7 @@ export default function ExpensesPage() {
                   className="mt-2"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Add Expense
+                  {t("expenses.add_expense")}
                 </Button>
               </div>
             ) : (
@@ -451,22 +450,22 @@ export default function ExpensesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Description</TableHead>
+                        <TableHead>{t("expenses.col_date")}</TableHead>
+                        <TableHead>{t("expenses.col_description")}</TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Category
+                          {t("expenses.col_category")}
                         </TableHead>
                         <TableHead className="hidden lg:table-cell">
-                          Project
+                          {t("expenses.col_project")}
                         </TableHead>
-                        <TableHead>Amount</TableHead>
+                        <TableHead>{t("expenses.col_amount")}</TableHead>
                         <TableHead className="hidden sm:table-cell">
-                          Tax Deductible
+                          {t("expenses.col_tax")}
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Receipt
+                          {t("expenses.col_receipt")}
                         </TableHead>
-                        <TableHead className="w-[80px]">Actions</TableHead>
+                        <TableHead className="w-[80px]">{t("expenses.col_actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -485,7 +484,7 @@ export default function ExpensesPage() {
                               <span
                                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_COLORS[expense.category] ?? CATEGORY_COLORS.other}`}
                               >
-                                {CATEGORY_LABELS[expense.category] ?? expense.category}
+                                {t(`expenses.cat_${expense.category}`)}
                               </span>
                             ) : (
                               <span className="text-muted-foreground text-xs">—</span>
@@ -502,7 +501,7 @@ export default function ExpensesPage() {
                               variant={expense.tax_deductible ? "secondary" : "outline"}
                               className="text-xs"
                             >
-                              {expense.tax_deductible ? "Yes" : "No"}
+                              {expense.tax_deductible ? t("expenses.yes") : t("expenses.no")}
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
@@ -538,7 +537,7 @@ export default function ExpensesPage() {
                 {data && data.totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4">
                     <p className="text-sm text-muted-foreground">
-                      Page {data.page} of {data.totalPages}
+                      {t("common.page_of", { page: String(data.page), total: String(data.totalPages) })}
                     </p>
                     <div className="flex items-center gap-2">
                       <Button
@@ -548,7 +547,7 @@ export default function ExpensesPage() {
                         onClick={() => handlePageChange(data.page - 1)}
                       >
                         <ChevronLeft className="h-4 w-4" />
-                        Previous
+                        {t("common.previous")}
                       </Button>
                       <Button
                         variant="outline"
@@ -556,7 +555,7 @@ export default function ExpensesPage() {
                         disabled={data.page >= data.totalPages}
                         onClick={() => handlePageChange(data.page + 1)}
                       >
-                        Next
+                        {t("common.next")}
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -582,13 +581,13 @@ export default function ExpensesPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Expense</AlertDialogTitle>
+            <AlertDialogTitle>{t("expenses.delete_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this expense? This action cannot be undone.
+              {t("expenses.delete_desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={handleDelete}
@@ -596,7 +595,7 @@ export default function ExpensesPage() {
               {deleteExpense.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -607,7 +606,7 @@ export default function ExpensesPage() {
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Deleting...</span>
+            <span>{t("common.deleting")}</span>
           </div>
         </div>
       )}

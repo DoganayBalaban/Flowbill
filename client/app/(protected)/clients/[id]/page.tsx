@@ -29,6 +29,7 @@ import {
   useClientTimeEntries,
 } from "@/lib/hooks/useClients";
 import { clientPortalApi } from "@/lib/api/portal";
+import { useTranslation } from "@/lib/i18n/context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -54,16 +55,6 @@ import { useState } from "react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getProjectStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    active: "Active",
-    on_hold: "On Hold",
-    completed: "Completed",
-    cancelled: "Cancelled",
-  };
-  return map[status] || status;
-}
-
 function getProjectStatusVariant(
   status: string,
 ): "default" | "secondary" | "destructive" | "outline" {
@@ -77,17 +68,6 @@ function getProjectStatusVariant(
     cancelled: "destructive",
   };
   return map[status] || "secondary";
-}
-
-function getInvoiceStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    draft: "Draft",
-    sent: "Sent",
-    paid: "Paid",
-    overdue: "Overdue",
-    cancelled: "Cancelled",
-  };
-  return map[status] || status;
 }
 
 function getInvoiceStatusVariant(
@@ -138,6 +118,7 @@ export default function ClientDetailPage() {
   const router = useRouter();
   const params = useParams();
   const clientId = params.id as string;
+  const { t } = useTranslation();
 
   const { data: client, isLoading, error } = useClient(clientId);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -158,10 +139,10 @@ export default function ClientDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-destructive font-medium">Client not found</p>
+          <p className="text-destructive font-medium">{t("clients.client_not_found")}</p>
           <Button variant="outline" onClick={() => router.push("/clients")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Clients
+            {t("clients.back_to_clients")}
           </Button>
         </div>
       </div>
@@ -195,7 +176,7 @@ export default function ClientDetailPage() {
           </div>
           <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Edit
+            {t("common.edit")}
           </Button>
         </div>
 
@@ -204,38 +185,38 @@ export default function ClientDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <User className="h-5 w-5" />
-              Client Details
+              {t("clients.client_details")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <InfoItem
                 icon={<Mail className="h-4 w-4" />}
-                label="Email"
+                label={t("clients.col_email")}
                 value={client.email}
               />
               <InfoItem
                 icon={<Phone className="h-4 w-4" />}
-                label="Phone"
+                label={t("clients.col_phone")}
                 value={client.phone}
               />
               <InfoItem
                 icon={<Clock className="h-4 w-4" />}
-                label="Hourly Rate"
+                label={t("clients.col_hourly_rate")}
                 value={
                   client.hourly_rate ? formatCurrency(client.hourly_rate) : null
                 }
               />
               <InfoItem
                 icon={<MapPin className="h-4 w-4" />}
-                label="Address"
+                label={t("clients.col_address")}
                 value={client.address}
               />
               {client.notes && (
                 <div className="sm:col-span-2 lg:col-span-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <StickyNote className="h-4 w-4" />
-                    Notes
+                    {t("clients.col_notes")}
                   </div>
                   <p className="text-sm">{client.notes}</p>
                 </div>
@@ -249,30 +230,30 @@ export default function ClientDetailPage() {
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="projects" className="flex items-center gap-2">
               <FolderOpen className="h-4 w-4" />
-              Projects
+              {t("clients.tab_projects")}
             </TabsTrigger>
             <TabsTrigger value="invoices" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Invoices
+              {t("clients.tab_invoices")}
             </TabsTrigger>
             <TabsTrigger
               value="time-entries"
               className="flex items-center gap-2"
             >
               <Timer className="h-4 w-4" />
-              Time
+              {t("clients.tab_time")}
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Stats
+              {t("clients.tab_stats")}
             </TabsTrigger>
             <TabsTrigger value="revenue" className="flex items-center gap-2">
               <Banknote className="h-4 w-4" />
-              Revenue
+              {t("clients.tab_revenue")}
             </TabsTrigger>
             <TabsTrigger value="portal" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              Portal
+              {t("clients.tab_portal")}
             </TabsTrigger>
           </TabsList>
 
@@ -360,6 +341,7 @@ function StatCard({
 // ─── Tab Components ───────────────────────────────────────────────────────────
 
 function ProjectsTab({ clientId }: { clientId: string }) {
+  const { t } = useTranslation();
   const { data: projects, isLoading } = useClientProjects(clientId);
 
   if (isLoading)
@@ -379,7 +361,7 @@ function ProjectsTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12 space-y-2">
           <FolderOpen className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground">
-            No projects found for this client.
+            {t("clients.no_projects_for_client")}
           </p>
         </CardContent>
       </Card>
@@ -388,22 +370,26 @@ function ProjectsTab({ clientId }: { clientId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Projects</CardTitle>
-        <CardDescription>{projects.length} {projects.length === 1 ? "project" : "projects"}</CardDescription>
+        <CardTitle className="text-lg">{t("clients.tab_projects")}</CardTitle>
+        <CardDescription>
+          {projects.length === 1
+            ? t("projects.projects_found_one", { count: String(projects.length) })
+            : t("projects.projects_found_other", { count: String(projects.length) })}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Project Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Budget</TableHead>
+                <TableHead>{t("projects.col_project_name")}</TableHead>
+                <TableHead>{t("projects.col_status")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("projects.col_budget")}</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Start Date
+                  {t("clients.col_start_date")}
                 </TableHead>
                 <TableHead className="hidden lg:table-cell">
-                  Deadline
+                  {t("projects.col_deadline")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -413,7 +399,7 @@ function ProjectsTab({ clientId }: { clientId: string }) {
                   <TableCell className="font-medium">{project.name}</TableCell>
                   <TableCell>
                     <Badge variant={getProjectStatusVariant(project.status)}>
-                      {getProjectStatusLabel(project.status)}
+                      {t(`projects.status_${project.status}`)}
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
@@ -423,7 +409,6 @@ function ProjectsTab({ clientId }: { clientId: string }) {
                     {formatDate(project.start_date)}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
-                    {/* backend field is 'deadline', not 'end_date' */}
                     {formatDate(project.deadline)}
                   </TableCell>
                 </TableRow>
@@ -437,6 +422,7 @@ function ProjectsTab({ clientId }: { clientId: string }) {
 }
 
 function InvoicesTab({ clientId }: { clientId: string }) {
+  const { t } = useTranslation();
   const { data: invoices, isLoading } = useClientInvoices(clientId);
 
   if (isLoading)
@@ -456,7 +442,7 @@ function InvoicesTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12 space-y-2">
           <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground">
-            No invoices found for this client.
+            {t("clients.no_invoices_for_client")}
           </p>
         </CardContent>
       </Card>
@@ -465,22 +451,26 @@ function InvoicesTab({ clientId }: { clientId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Invoices</CardTitle>
-        <CardDescription>{invoices.length} {invoices.length === 1 ? "invoice" : "invoices"}</CardDescription>
+        <CardTitle className="text-lg">{t("clients.tab_invoices")}</CardTitle>
+        <CardDescription>
+          {invoices.length === 1
+            ? t("invoices.invoices_found_one", { count: String(invoices.length) })
+            : t("invoices.invoices_found_other", { count: String(invoices.length) })}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Invoice #</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>{t("invoices.col_invoice_number")}</TableHead>
+                <TableHead>{t("invoices.col_status")}</TableHead>
+                <TableHead>{t("invoices.col_amount")}</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Issue Date
+                  {t("clients.col_issue_date")}
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Due Date
+                  {t("clients.col_due_date")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -492,7 +482,7 @@ function InvoicesTab({ clientId }: { clientId: string }) {
                   </TableCell>
                   <TableCell>
                     <Badge variant={getInvoiceStatusVariant(invoice.status)}>
-                      {getInvoiceStatusLabel(invoice.status)}
+                      {t(`invoices.status_${invoice.status}`)}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium">
@@ -515,6 +505,7 @@ function InvoicesTab({ clientId }: { clientId: string }) {
 }
 
 function TimeEntriesTab({ clientId }: { clientId: string }) {
+  const { t } = useTranslation();
   const { data, isLoading } = useClientTimeEntries(clientId);
   const entries = data?.data;
 
@@ -535,18 +526,20 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12 space-y-2">
           <Timer className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground">
-            No time entries found for this client.
+            {t("clients.no_time_entries_for_client")}
           </p>
         </CardContent>
       </Card>
     );
 
+  const total = data?.meta.total ?? entries.length;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Time Entries</CardTitle>
+        <CardTitle className="text-lg">{t("clients.tab_time")}</CardTitle>
         <CardDescription>
-          {data?.meta.total ?? entries.length} {(data?.meta.total ?? entries.length) === 1 ? "entry" : "entries"}
+          {t("clients.stat_time_entries", { count: String(total) })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -554,12 +547,12 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="hidden md:table-cell">Project</TableHead>
-                <TableHead>Duration</TableHead>
+                <TableHead>{t("expenses.col_date")}</TableHead>
+                <TableHead>{t("expenses.col_description")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("time_entries.col_project")}</TableHead>
+                <TableHead>{t("clients.col_duration")}</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Billable
+                  {t("time_entries.col_billable")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -586,9 +579,9 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {entry.billable ? (
-                      <Badge variant="default">Yes</Badge>
+                      <Badge variant="default">{t("expenses.yes")}</Badge>
                     ) : (
-                      <Badge variant="outline">No</Badge>
+                      <Badge variant="outline">{t("expenses.no")}</Badge>
                     )}
                   </TableCell>
                 </TableRow>
@@ -602,6 +595,7 @@ function TimeEntriesTab({ clientId }: { clientId: string }) {
 }
 
 function StatsTab({ clientId }: { clientId: string }) {
+  const { t } = useTranslation();
   const { data: stats, isLoading } = useClientStats(clientId);
 
   if (isLoading)
@@ -619,7 +613,7 @@ function StatsTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12">
           <TrendingUp className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground mt-2">
-            Failed to load stats.
+            {t("clients.failed_to_load_stats")}
           </p>
         </CardContent>
       </Card>
@@ -637,29 +631,29 @@ function StatsTab({ clientId }: { clientId: string }) {
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Invoice Status
+            {t("clients.invoice_status_title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Collection progress</span>
+            <span className="text-muted-foreground">{t("clients.collection_progress")}</span>
             <span className="font-medium">
-              {stats.paid_invoice_count}/{stats.total_invoice_count} invoices paid
+              {stats.paid_invoice_count}/{stats.total_invoice_count} {t("clients.invoices_paid_label")}
             </span>
           </div>
           <Progress value={invoicePaidPercent} className="h-2" />
           <div className="grid grid-cols-3 gap-4 pt-2">
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.total_invoice_count}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-xs text-muted-foreground">{t("invoices.stat_total")}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.open_invoice_count}</p>
-              <p className="text-xs text-muted-foreground">Open</p>
+              <p className="text-xs text-muted-foreground">{t("clients.stat_open")}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.paid_invoice_count}</p>
-              <p className="text-xs text-muted-foreground">Paid</p>
+              <p className="text-xs text-muted-foreground">{t("invoices.stat_paid")}</p>
             </div>
           </div>
         </CardContent>
@@ -668,34 +662,34 @@ function StatsTab({ clientId }: { clientId: string }) {
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title="Total Revenue"
+          title={t("clients.stat_total_revenue")}
           value={formatCurrency(stats.total_revenue)}
-          description="Total invoiced amount"
+          description={t("clients.stat_total_invoiced")}
           icon={<TrendingUp className="h-5 w-5 text-emerald-500" />}
         />
         <StatCard
-          title="Collected"
+          title={t("clients.stat_collected")}
           value={formatCurrency(stats.total_paid)}
-          description="Total payments received"
+          description={t("clients.stat_total_payments")}
           icon={<Banknote className="h-5 w-5 text-blue-500" />}
         />
         <StatCard
-          title="Outstanding"
+          title={t("clients.stat_outstanding")}
           value={formatCurrency(stats.outstanding)}
-          description="Unpaid amount"
+          description={t("clients.stat_unpaid_amount")}
           icon={<Clock className="h-5 w-5 text-amber-500" />}
           highlight={stats.outstanding > 0}
         />
         <StatCard
-          title="Projects"
+          title={t("clients.stat_projects_label")}
           value={stats.project_count.toString()}
-          description="Active projects"
+          description={t("clients.stat_active_projects")}
           icon={<FolderOpen className="h-5 w-5 text-purple-500" />}
         />
         <StatCard
-          title="Hours Tracked"
+          title={t("clients.stat_hours_tracked")}
           value={`${stats.total_tracked_hours}h`}
-          description={`${stats.time_entry_count} time entries`}
+          description={t("clients.stat_time_entries", { count: String(stats.time_entry_count) })}
           icon={<Timer className="h-5 w-5 text-indigo-500" />}
         />
       </div>
@@ -714,6 +708,7 @@ function PortalTab({
     portal_enabled?: boolean;
   };
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -722,11 +717,11 @@ function PortalTab({
     mutationFn: () => clientPortalApi.enablePortal(clientId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients", clientId] });
-      setSuccessMsg("Portal enabled successfully.");
+      setSuccessMsg(t("clients.portal_enabled_success"));
       setErrorMsg(null);
     },
     onError: () => {
-      setErrorMsg("Failed to enable portal. Please try again.");
+      setErrorMsg(t("clients.portal_enable_error"));
       setSuccessMsg(null);
     },
   });
@@ -735,11 +730,11 @@ function PortalTab({
     mutationFn: () => clientPortalApi.disablePortal(clientId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients", clientId] });
-      setSuccessMsg("Portal disabled. All active sessions have been revoked.");
+      setSuccessMsg(t("clients.portal_disabled_success"));
       setErrorMsg(null);
     },
     onError: () => {
-      setErrorMsg("Failed to disable portal. Please try again.");
+      setErrorMsg(t("clients.portal_disable_error"));
       setSuccessMsg(null);
     },
   });
@@ -747,11 +742,11 @@ function PortalTab({
   const sendLinkMutation = useMutation({
     mutationFn: () => clientPortalApi.sendMagicLink(clientId),
     onSuccess: () => {
-      setSuccessMsg("Magic link sent to client's email.");
+      setSuccessMsg(t("clients.portal_link_sent"));
       setErrorMsg(null);
     },
     onError: () => {
-      setErrorMsg("Failed to send magic link. Please try again.");
+      setErrorMsg(t("clients.portal_link_error"));
       setSuccessMsg(null);
     },
   });
@@ -768,24 +763,23 @@ function PortalTab({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Globe className="h-5 w-5" />
-          Client Portal
+          {t("clients.portal_title")}
         </CardTitle>
         <CardDescription>
-          Give your client read-only access to their invoices via a secure
-          magic-link portal — no account required.
+          {t("clients.portal_desc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Status */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">Status:</span>
+          <span className="text-sm text-muted-foreground">{t("clients.portal_status")}</span>
           {isPortalEnabled ? (
             <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400">
-              Active
+              {t("clients.portal_active")}
             </Badge>
           ) : (
             <Badge variant="outline" className="text-muted-foreground">
-              Disabled
+              {t("clients.portal_disabled_label")}
             </Badge>
           )}
         </div>
@@ -806,8 +800,7 @@ function PortalTab({
         {!isPortalEnabled ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Enable the portal to allow this client to view their invoices. You
-              can disable it at any time to immediately revoke access.
+              {t("clients.portal_enable_desc")}
             </p>
             <Button
               onClick={() => enableMutation.mutate()}
@@ -816,15 +809,13 @@ function PortalTab({
               {enableMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Enable Portal
+              {t("clients.portal_enable")}
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              The portal is active. Send your client a magic link to let them
-              sign in and view their invoices. Each link is valid for{" "}
-              <strong>15 minutes</strong> and can only be used once.
+              {t("clients.portal_enabled_desc")}
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -837,7 +828,7 @@ function PortalTab({
                 ) : (
                   <Send className="mr-2 h-4 w-4" />
                 )}
-                Send Magic Link
+                {t("clients.portal_send_link")}
               </Button>
 
               <Button
@@ -848,14 +839,13 @@ function PortalTab({
                 {disableMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Disable Portal
+                {t("clients.portal_disable")}
               </Button>
             </div>
 
             {!hasEmail && (
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                This client has no email address on file. Add an email address
-                before sending a magic link.
+                {t("clients.portal_no_email")}
               </p>
             )}
           </div>
@@ -866,7 +856,7 @@ function PortalTab({
 }
 
 function RevenueTab({ clientId }: { clientId: string }) {
-  // Revenue is a subset of stats — reuse for a lightweight view
+  const { t } = useTranslation();
   const { data: stats, isLoading } = useClientStats(clientId);
 
   if (isLoading)
@@ -884,7 +874,7 @@ function RevenueTab({ clientId }: { clientId: string }) {
         <CardContent className="pt-6 text-center py-12">
           <TrendingUp className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="text-muted-foreground mt-2">
-            Failed to load revenue data.
+            {t("clients.failed_to_load_revenue")}
           </p>
         </CardContent>
       </Card>
@@ -893,34 +883,34 @@ function RevenueTab({ clientId }: { clientId: string }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <StatCard
-        title="Total Revenue"
+        title={t("clients.stat_total_revenue")}
         value={formatCurrency(stats.total_revenue)}
-        description="Revenue from all invoices"
+        description={t("clients.stat_revenue_from_invoices")}
         icon={<TrendingUp className="h-5 w-5 text-emerald-500" />}
       />
       <StatCard
-        title="Total Collected"
+        title={t("clients.stat_total_collected")}
         value={formatCurrency(stats.total_paid)}
-        description="Total payments received"
+        description={t("clients.stat_total_payments")}
         icon={<Banknote className="h-5 w-5 text-blue-500" />}
       />
       <StatCard
-        title="Outstanding"
+        title={t("clients.stat_outstanding")}
         value={formatCurrency(stats.outstanding)}
-        description="Unpaid amount"
+        description={t("clients.stat_unpaid_amount")}
         icon={<Clock className="h-5 w-5 text-amber-500" />}
         highlight={stats.outstanding > 0}
       />
       <StatCard
-        title="Total Invoices"
+        title={t("clients.stat_total_invoices")}
         value={stats.total_invoice_count.toString()}
-        description="Invoices issued"
+        description={t("clients.stat_invoices_issued")}
         icon={<FileText className="h-5 w-5 text-muted-foreground" />}
       />
       <StatCard
-        title="Paid Invoices"
+        title={t("clients.stat_paid_invoices")}
         value={stats.paid_invoice_count.toString()}
-        description="Fully paid invoices"
+        description={t("clients.stat_fully_paid")}
         icon={<FileText className="h-5 w-5 text-emerald-500" />}
       />
     </div>

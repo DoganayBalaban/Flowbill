@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   useCreatePaymentLink,
   useDownloadPdf,
@@ -46,24 +47,8 @@ import { toast } from "sonner";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function getStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    draft: "Draft",
-    sent: "Sent",
-    paid: "Paid",
-    overdue: "Overdue",
-    cancelled: "Cancelled",
-  };
-  return map[status] || status;
-}
-
-function getStatusVariant(
-  status: string,
-): "default" | "secondary" | "destructive" | "outline" {
-  const map: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
+function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+  const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     draft: "outline",
     sent: "default",
     paid: "secondary",
@@ -73,36 +58,23 @@ function getStatusVariant(
   return map[status] || "secondary";
 }
 
-function getPdfStatusBadge(status: string) {
-  const map: Record<
-    string,
-    {
-      label: string;
-      variant: "default" | "secondary" | "destructive" | "outline";
-    }
-  > = {
-    not_generated: { label: "Not Generated", variant: "outline" },
-    processing: { label: "Processing...", variant: "default" },
-    generated: { label: "Ready", variant: "secondary" },
-    failed: { label: "Failed", variant: "destructive" },
+function getPdfStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+  const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    not_generated: "outline",
+    processing: "default",
+    generated: "secondary",
+    failed: "destructive",
   };
-  return map[status] || { label: status, variant: "outline" as const };
+  return map[status] || "outline";
 }
 
 function formatCurrency(amount: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(Number(amount));
+  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(amount));
 }
 
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return "—";
-  return new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(dateStr));
+  return new Intl.DateTimeFormat("en-US", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(dateStr));
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -111,6 +83,7 @@ export default function InvoiceDetailPage() {
   const router = useRouter();
   const params = useParams();
   const invoiceId = params.id as string;
+  const { t } = useTranslation();
 
   const { data: invoice, isLoading, error } = useInvoice(invoiceId);
   const generatePdf = useGeneratePdf();
@@ -131,13 +104,11 @@ export default function InvoiceDetailPage() {
     createPaymentLink.mutate(invoiceId, {
       onSuccess: (data) => {
         handleCopyPaymentLink(data.data.url);
-        toast.success("Payment link copied to clipboard!");
+        toast.success(t("invoices.toast_payment_link_copied"));
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (err: any) =>
-        toast.error(
-          err?.response?.data?.message ?? "Failed to create payment link",
-        ),
+        toast.error(err?.response?.data?.message ?? t("invoices.toast_payment_link_error")),
     });
   };
 
@@ -154,46 +125,36 @@ export default function InvoiceDetailPage() {
   if (error || !invoice) {
     return (
       <div className="max-w-5xl mx-auto p-6 text-center py-20">
-        <p className="text-destructive text-lg">Invoice not found.</p>
-        <Button
-          variant="outline"
-          className="mt-4"
-          onClick={() => router.back()}
-        >
+        <p className="text-destructive text-lg">{t("invoices.invoice_not_found")}</p>
+        <Button variant="outline" className="mt-4" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Go Back
+          {t("invoices.go_back")}
         </Button>
       </div>
     );
   }
 
-  // Calculate remaining balance from payments
-  const totalPaid =
-    invoice.payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
+  const totalPaid = invoice.payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
   const remainingBalance = Number(invoice.total) - totalPaid;
-
-  const pdfBadge = getPdfStatusBadge(invoice.pdf_status);
 
   const handleGeneratePdf = () => {
     generatePdf.mutate(
       { id: invoiceId },
       {
         onSuccess: () =>
-          toast.info("Generating PDF...", {
-            description: "You will be notified when it's ready.",
+          toast.info(t("invoices.toast_generating_pdf"), {
+            description: t("invoices.toast_pdf_desc"),
           }),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onError: (err: any) =>
-          toast.error(
-            err?.response?.data?.message ?? "Failed to generate PDF",
-          ),
+        onError: (err: any) =>
+          toast.error(err?.response?.data?.message ?? t("invoices.toast_pdf_error")),
       },
     );
   };
 
   const handleDownloadPdf = () => {
     downloadPdf.mutate(invoiceId, {
-      onError: () => toast.error("PDF is not ready yet"),
+      onError: () => toast.error(t("invoices.toast_pdf_not_ready")),
     });
   };
 
@@ -201,14 +162,10 @@ export default function InvoiceDetailPage() {
     const isDraft = invoice?.status === "draft";
     sendEmail.mutate(invoiceId, {
       onSuccess: () =>
-        toast.info(
-          isDraft
-            ? "Invoice is being prepared and will be sent to the client shortly."
-            : "Email queued — the client will receive it shortly.",
-        ),
+        toast.info(isDraft ? t("invoices.toast_send_draft") : t("invoices.toast_send_queued")),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (err: any) =>
-        toast.error(err?.response?.data?.message ?? "Failed to send invoice"),
+        toast.error(err?.response?.data?.message ?? t("invoices.toast_send_error")),
     });
   };
 
@@ -221,47 +178,35 @@ export default function InvoiceDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              {invoice.invoice_number}
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight">{invoice.invoice_number}</h1>
             <p className="text-sm text-muted-foreground">
               {invoice.client?.name} • {invoice.client?.email}
             </p>
           </div>
           <Badge variant={getStatusVariant(invoice.status)} className="ml-2">
-            {getStatusLabel(invoice.status)}
+            {t(`invoices.status_${invoice.status}`)}
           </Badge>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Draft → send in one click (PDF + email chained automatically) */}
           {invoice.status === "draft" && (
-            <Button
-              size="sm"
-              onClick={handleSendEmail}
-              disabled={sendEmail.isPending}
-            >
+            <Button size="sm" onClick={handleSendEmail} disabled={sendEmail.isPending}>
               {sendEmail.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Send className="mr-2 h-4 w-4" />
               )}
-              Send Invoice
+              {t("invoices.send_invoice")}
             </Button>
           )}
-          {/* Already sent / overdue — show PDF controls + resend */}
+
           {invoice.status !== "draft" && (
             <>
               {invoice.pdf_status === "generated" ? (
                 <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadPdf}
-                    disabled={downloadPdf.isPending}
-                  >
+                  <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={downloadPdf.isPending}>
                     <Download className="mr-2 h-4 w-4" />
-                    Download PDF
+                    {t("invoices.download_pdf")}
                   </Button>
                   <Button
                     variant="outline"
@@ -270,20 +215,17 @@ export default function InvoiceDetailPage() {
                       generatePdf.mutate(
                         { id: invoiceId, force: true },
                         {
-                          onSuccess: () => toast.info("Regenerating PDF..."),
+                          onSuccess: () => toast.info(t("invoices.toast_regenerating")),
                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onError: (err: any) =>
-                            toast.error(
-                              err?.response?.data?.message ??
-                                "Failed to regenerate PDF",
-                            ),
+                          onError: (err: any) =>
+                            toast.error(err?.response?.data?.message ?? t("invoices.toast_regenerate_error")),
                         },
                       )
                     }
                     disabled={generatePdf.isPending}
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Regenerate
+                    {t("invoices.regenerate")}
                   </Button>
                 </>
               ) : (
@@ -291,108 +233,96 @@ export default function InvoiceDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={handleGeneratePdf}
-                  disabled={
-                    generatePdf.isPending ||
-                    invoice.pdf_status === "processing"
-                  }
+                  disabled={generatePdf.isPending || invoice.pdf_status === "processing"}
                 >
-                  {generatePdf.isPending ||
-                  invoice.pdf_status === "processing" ? (
+                  {generatePdf.isPending || invoice.pdf_status === "processing" ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <FileText className="mr-2 h-4 w-4" />
                   )}
-                  Generate PDF
+                  {t("invoices.generate_pdf")}
                 </Button>
               )}
               {invoice.status !== "cancelled" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSendEmail}
-                  disabled={sendEmail.isPending}
-                >
+                <Button variant="outline" size="sm" onClick={handleSendEmail} disabled={sendEmail.isPending}>
                   {sendEmail.isPending ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <Mail className="mr-2 h-4 w-4" />
                   )}
-                  Resend Email
+                  {t("invoices.resend_email")}
                 </Button>
               )}
             </>
           )}
-          {/* Stripe Payment Link — visible for sent/overdue invoices */}
+
           {(invoice.status === "sent" || invoice.status === "overdue") && (
             <>
               {invoice.stripe_payment_link_url ? (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    handleCopyPaymentLink(invoice.stripe_payment_link_url!)
-                  }
+                  onClick={() => handleCopyPaymentLink(invoice.stripe_payment_link_url!)}
                 >
                   {linkCopied ? (
                     <Check className="mr-2 h-4 w-4 text-green-500" />
                   ) : (
                     <Copy className="mr-2 h-4 w-4" />
                   )}
-                  {linkCopied ? "Copied!" : "Copy Payment Link"}
+                  {linkCopied ? t("invoices.copied") : t("invoices.copy_payment_link")}
                 </Button>
               ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCreatePaymentLink}
-                  disabled={createPaymentLink.isPending}
-                >
+                <Button variant="outline" size="sm" onClick={handleCreatePaymentLink} disabled={createPaymentLink.isPending}>
                   {createPaymentLink.isPending ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <Link className="mr-2 h-4 w-4" />
                   )}
-                  Create Payment Link
+                  {t("invoices.create_payment_link")}
                 </Button>
               )}
             </>
           )}
-          {invoice.status !== "paid" &&
-            invoice.status !== "cancelled" &&
-            invoice.status !== "draft" && (
-              <Button size="sm" onClick={() => setPaymentDialogOpen(true)}>
-                <CreditCard className="mr-2 h-4 w-4" />
-                Record Payment
-              </Button>
-            )}
+
+          {invoice.status !== "paid" && invoice.status !== "cancelled" && invoice.status !== "draft" && (
+            <Button size="sm" onClick={() => setPaymentDialogOpen(true)}>
+              <CreditCard className="mr-2 h-4 w-4" />
+              {t("invoices.record_payment")}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Invoice Info + Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Info Card */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">Invoice Details</CardTitle>
+            <CardTitle className="text-lg">{t("invoices.invoice_details")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               <div>
-                <p className="text-muted-foreground">Issue Date</p>
+                <p className="text-muted-foreground">{t("clients.col_issue_date")}</p>
                 <p className="font-medium">{formatDate(invoice.issue_date)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Due Date</p>
+                <p className="text-muted-foreground">{t("clients.col_due_date")}</p>
                 <p className="font-medium">{formatDate(invoice.due_date)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Currency</p>
+                <p className="text-muted-foreground">{t("invoices.col_currency")}</p>
                 <p className="font-medium">{invoice.currency}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">PDF Status</p>
-                <Badge variant={pdfBadge.variant} className="mt-0.5">
-                  {pdfBadge.label}
+                <p className="text-muted-foreground">{t("invoices.col_pdf_status")}</p>
+                <Badge variant={getPdfStatusVariant(invoice.pdf_status)} className="mt-0.5">
+                  {invoice.pdf_status === "not_generated"
+                    ? t("invoices.pdf_not_generated")
+                    : invoice.pdf_status === "processing"
+                    ? t("invoices.pdf_processing")
+                    : invoice.pdf_status === "generated"
+                    ? t("invoices.pdf_ready")
+                    : t("invoices.pdf_failed")}
                 </Badge>
               </div>
             </div>
@@ -403,13 +333,13 @@ export default function InvoiceDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   {invoice.notes && (
                     <div>
-                      <p className="text-muted-foreground mb-1">Notes</p>
+                      <p className="text-muted-foreground mb-1">{t("invoices.col_notes")}</p>
                       <p className="whitespace-pre-wrap">{invoice.notes}</p>
                     </div>
                   )}
                   {invoice.terms && (
                     <div>
-                      <p className="text-muted-foreground mb-1">Terms</p>
+                      <p className="text-muted-foreground mb-1">{t("invoices.col_terms")}</p>
                       <p className="whitespace-pre-wrap">{invoice.terms}</p>
                     </div>
                   )}
@@ -419,48 +349,37 @@ export default function InvoiceDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Summary Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Summary</CardTitle>
+            <CardTitle className="text-lg">{t("invoices.summary_title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>
-                {formatCurrency(Number(invoice.subtotal), invoice.currency)}
-              </span>
+              <span className="text-muted-foreground">{t("invoices.subtotal")}</span>
+              <span>{formatCurrency(Number(invoice.subtotal), invoice.currency)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Tax</span>
-              <span>
-                {formatCurrency(Number(invoice.tax), invoice.currency)}
-              </span>
+              <span className="text-muted-foreground">{t("invoices.tax")}</span>
+              <span>{formatCurrency(Number(invoice.tax), invoice.currency)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Discount</span>
-              <span>
-                -{formatCurrency(Number(invoice.discount), invoice.currency)}
-              </span>
+              <span className="text-muted-foreground">{t("invoices.discount")}</span>
+              <span>-{formatCurrency(Number(invoice.discount), invoice.currency)}</span>
             </div>
             <Separator />
             <div className="flex justify-between font-bold text-base">
-              <span>Total</span>
-              <span>
-                {formatCurrency(Number(invoice.total), invoice.currency)}
-              </span>
+              <span>{t("invoices.total")}</span>
+              <span>{formatCurrency(Number(invoice.total), invoice.currency)}</span>
             </div>
             {totalPaid > 0 && (
               <>
                 <div className="flex justify-between text-green-600">
-                  <span>Paid</span>
+                  <span>{t("invoices.paid_label")}</span>
                   <span>{formatCurrency(totalPaid, invoice.currency)}</span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span>Remaining</span>
-                  <span>
-                    {formatCurrency(remainingBalance, invoice.currency)}
-                  </span>
+                  <span>{t("invoices.remaining")}</span>
+                  <span>{formatCurrency(remainingBalance, invoice.currency)}</span>
                 </div>
               </>
             )}
@@ -472,9 +391,11 @@ export default function InvoiceDetailPage() {
       {invoice.invoice_items && invoice.invoice_items.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Invoice Items</CardTitle>
+            <CardTitle className="text-lg">{t("invoices.invoice_items_title")}</CardTitle>
             <CardDescription>
-              {invoice.invoice_items.length} {invoice.invoice_items.length === 1 ? "item" : "items"}
+              {invoice.invoice_items.length === 1
+                ? t("invoices.items_found_one", { count: "1" })
+                : t("invoices.items_found_other", { count: String(invoice.invoice_items.length) })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -482,25 +403,19 @@ export default function InvoiceDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Rate</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>{t("expenses.col_description")}</TableHead>
+                    <TableHead className="text-right">{t("invoices.col_qty")}</TableHead>
+                    <TableHead className="text-right">{t("invoices.col_rate")}</TableHead>
+                    <TableHead className="text-right">{t("invoices.col_amount")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {invoice.invoice_items.map((item, index) => (
                     <TableRow key={item.id ?? index}>
                       <TableCell>{item.description}</TableCell>
-                      <TableCell className="text-right">
-                        {item.quantity}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(item.rate, invoice.currency)}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(item.amount, invoice.currency)}
-                      </TableCell>
+                      <TableCell className="text-right">{item.quantity}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.rate, invoice.currency)}</TableCell>
+                      <TableCell className="text-right font-medium">{formatCurrency(item.amount, invoice.currency)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -514,9 +429,11 @@ export default function InvoiceDetailPage() {
       {invoice.payments && invoice.payments.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Payment History</CardTitle>
+            <CardTitle className="text-lg">{t("invoices.payment_history")}</CardTitle>
             <CardDescription>
-              {invoice.payments.length} {invoice.payments.length === 1 ? "payment" : "payments"}
+              {invoice.payments.length === 1
+                ? t("invoices.payments_found_one", { count: "1" })
+                : t("invoices.payments_found_other", { count: String(invoice.payments.length) })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -524,10 +441,10 @@ export default function InvoiceDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead>Reference #</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>{t("expenses.col_date")}</TableHead>
+                    <TableHead>{t("invoices.col_method")}</TableHead>
+                    <TableHead>{t("invoices.col_reference")}</TableHead>
+                    <TableHead className="text-right">{t("invoices.col_amount")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -548,7 +465,6 @@ export default function InvoiceDetailPage() {
         </Card>
       )}
 
-      {/* Payment Dialog */}
       <InvoicePaymentDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
