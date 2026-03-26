@@ -51,12 +51,6 @@ function formatCurrency(value: number): string {
 export function OverdueAlerts({ data, isLoading }: OverdueAlertsProps) {
   const { t, locale } = useTranslation();
 
-  function formatDate(dateStr: string): string {
-    return new Intl.DateTimeFormat(locale === "tr" ? "tr-TR" : "en-US", {
-      day: "numeric",
-      month: "short",
-    }).format(new Date(dateStr));
-  }
 
   return (
     <Card className="border transition-all duration-300 hover:shadow-lg">

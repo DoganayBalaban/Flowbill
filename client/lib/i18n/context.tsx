@@ -5,7 +5,6 @@ import {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
 import en from "./en.json";
@@ -16,7 +15,13 @@ export type Locale = "en" | "tr";
 const STORAGE_KEY = "flowbill_locale";
 const translations = { en, tr } as const;
 
-type TranslationValue = string | Record<string, unknown>;
+function getInitialLocale(): Locale {
+  if (typeof window === "undefined") return "en";
+  const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
+  if (stored === "en" || stored === "tr") return stored;
+  if (navigator.language.toLowerCase().startsWith("tr")) return "tr";
+  return "en";
+}
 
 function getNestedValue(obj: Record<string, unknown>, path: string): string {
   const keys = path.split(".");
@@ -44,20 +49,7 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    if (stored === "en" || stored === "tr") {
-      setLocaleState(stored);
-    } else {
-      // Tarayıcı dilini algıla
-      const browserLang = navigator.language.toLowerCase();
-      if (browserLang.startsWith("tr")) {
-        setLocaleState("tr");
-      }
-    }
-  }, []);
+  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
