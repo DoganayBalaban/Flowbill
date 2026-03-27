@@ -7,7 +7,7 @@ import { redisRateLimit } from "./redisRateLimit";
 // Login rate limiter - strict for security
 export const loginLimiter = redisRateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5,
+  maxRequests: 10,
   keyPrefix: "ratelimit:login",
   message: "Too many login attempts, please try again after 15 minutes.",
 });

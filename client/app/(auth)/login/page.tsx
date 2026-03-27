@@ -16,17 +16,67 @@ import {
   EyeOff,
   FileText,
   Loader2,
+  ShieldAlert,
   WifiOff,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+
+const LOCKOUT_KEY = "login_lockout_until";
+
+function getLockoutSeconds(): number {
+  if (typeof window === "undefined") return 0;
+  const until = localStorage.getItem(LOCKOUT_KEY);
+  if (!until) return 0;
+  const remaining = Math.ceil((parseInt(until, 10) - Date.now()) / 1000);
+  return remaining > 0 ? remaining : 0;
+}
+
+function setLockout(retryAfterSeconds: number) {
+  const until = Date.now() + retryAfterSeconds * 1000;
+  localStorage.setItem(LOCKOUT_KEY, String(until));
+}
+
+function clearLockout() {
+  localStorage.removeItem(LOCKOUT_KEY);
+}
 
 export default function LoginPage() {
   const login = useLogin();
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Restore lockout from localStorage on mount
+  useEffect(() => {
+    const remaining = getLockoutSeconds();
+    if (remaining > 0) startCountdown(remaining);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function startCountdown(seconds: number) {
+    setCooldown(seconds);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          clearLockout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   const {
     register,
@@ -37,8 +87,27 @@ export default function LoginPage() {
   });
 
   const onSubmit = (data: LoginInput) => {
-    login.mutate(data);
+    login.mutate(data, {
+      onError: (error) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const status = (error as any)?.response?.status;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const retryAfter = (error as any)?.response?.headers?.["retry-after"];
+        if (status === 429) {
+          const seconds = retryAfter ? parseInt(retryAfter, 10) : 15 * 60;
+          setLockout(seconds);
+          startCountdown(seconds);
+        }
+      },
+    });
   };
+
+  function formatCooldown(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
 
   function getLoginError(error: unknown): { message: string; hint?: string } {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,6 +117,12 @@ export default function LoginPage() {
 
     if (!status) {
       return { message: t("auth.error_no_connection"), hint: t("auth.error_no_connection_hint") };
+    }
+    if (status === 429) {
+      return {
+        message: t("auth.error_too_many_attempts"),
+        hint: t("auth.error_too_many_attempts_hint"),
+      };
     }
     if (status === 401 || msg.toLowerCase().includes("invalid credentials")) {
       return { message: t("auth.error_invalid_credentials"), hint: t("auth.error_invalid_credentials_hint") };
@@ -64,6 +139,8 @@ export default function LoginPage() {
     { icon: DollarSign, text: "Monitor your finances in real time" },
     { icon: CheckCircle2, text: "Manage clients and projects in one place" },
   ];
+
+  const isLocked = cooldown > 0;
 
   return (
     <div className="min-h-screen flex">
@@ -138,7 +215,21 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {login.error &&
+            {/* Lockout banner */}
+            {isLocked && (
+              <div className="rounded-lg border border-orange-300/40 bg-orange-50 dark:bg-orange-950/30 px-4 py-3 text-sm text-orange-700 dark:text-orange-400 flex gap-3">
+                <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="font-medium">{t("auth.error_too_many_attempts")}</p>
+                  <p className="text-xs opacity-80">
+                    {t("auth.error_lockout_countdown", { time: formatCooldown(cooldown) })}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Regular error banner */}
+            {login.error && !isLocked &&
               (() => {
                 const err = getLoginError(login.error);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,9 +287,15 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-500/20 transition-all"
-              disabled={login.isPending}
+              disabled={login.isPending || isLocked}
             >
-              {login.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.sign_in")}
+              {login.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isLocked ? (
+                `${t("auth.error_locked")} (${formatCooldown(cooldown)})`
+              ) : (
+                t("auth.sign_in")
+              )}
             </Button>
           </form>
 
