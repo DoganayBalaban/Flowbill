@@ -105,8 +105,8 @@ export function useDownloadPdf() {
   return useMutation({
     mutationFn: (id: string) => invoicesApi.downloadPdf(id),
     onSuccess: (data) => {
-      // Open the pre-signed URL in a new tab
       window.open(data.download_url, "_blank");
+      analytics.invoicePdfDownloaded();
     },
   });
 }
@@ -137,6 +137,7 @@ export function useMarkAsPaid() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["invoices", variables.id] });
+      analytics.invoiceMarkedPaid();
     },
   });
 }
@@ -150,6 +151,7 @@ export function useCreatePaymentLink() {
     mutationFn: (id: string) => invoicesApi.createPaymentLink(id),
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["invoices", id] });
+      analytics.paymentLinkCreated();
     },
   });
 }

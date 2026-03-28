@@ -78,6 +78,7 @@ export function useCreateManualTimeEntry() {
       timeEntriesApi.createManual(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["time-entries"] });
+      analytics.manualTimeEntryCreated();
     },
   });
 }
