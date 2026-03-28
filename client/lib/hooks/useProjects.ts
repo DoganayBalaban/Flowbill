@@ -6,6 +6,7 @@ import {
     ProjectsQueryParams,
     UpdateProjectData,
 } from "@/lib/api/projects";
+import { analytics } from "@/lib/analytics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // List projects with pagination/search/sort/filter
@@ -36,6 +37,7 @@ export function useCreateProject() {
     mutationFn: (data: CreateProjectData) => projectsApi.createProject(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      analytics.projectCreated();
     },
   });
 }

@@ -2,6 +2,7 @@
 
 import { authApi, LoginData, RegisterData, UpdateMeData } from "@/lib/api/auth";
 import { useAppDispatch } from "@/lib/hooks/useRedux";
+import { analytics } from "@/lib/analytics";
 import { logout as logoutAction, setUser } from "@/lib/store/authSlice";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -40,6 +41,7 @@ export function useLogin() {
       const userData = await authApi.getMe();
       dispatch(setUser(userData.user));
       queryClient.setQueryData(["user"], userData.user);
+      analytics.loginSuccess();
 
       // Check if onboarding is completed
       if (!userData.user.is_onboarding_completed) {
@@ -64,6 +66,7 @@ export function useRegister() {
       const userData = await authApi.getMe();
       dispatch(setUser(userData.user));
       queryClient.setQueryData(["user"], userData.user);
+      analytics.signupCompleted();
 
       // New users always go to onboarding
       router.push("/onboarding");

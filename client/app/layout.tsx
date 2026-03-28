@@ -1,5 +1,6 @@
 import { SentryInit } from "@/components/sentry-init";
 import { Providers } from "@/providers";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { Toaster } from "sonner";
@@ -88,6 +89,9 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         <Toaster richColors position="top-right" />
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   );
 }

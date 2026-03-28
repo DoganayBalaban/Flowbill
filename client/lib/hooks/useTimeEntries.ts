@@ -7,6 +7,7 @@ import {
   UpdateTimeEntryData,
   timeEntriesApi,
 } from "@/lib/api/timeEntries";
+import { analytics } from "@/lib/analytics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
@@ -52,6 +53,7 @@ export function useStartTimer() {
     mutationFn: (data: StartTimerData) => timeEntriesApi.startTimer(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["time-entries"] });
+      analytics.timerStarted();
     },
   });
 }
@@ -63,6 +65,7 @@ export function useStopTimer() {
     mutationFn: (id: string) => timeEntriesApi.stopTimer(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["time-entries"] });
+      analytics.timerStopped();
     },
   });
 }

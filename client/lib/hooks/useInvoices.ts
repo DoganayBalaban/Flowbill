@@ -7,6 +7,7 @@ import {
   MarkAsPaidData,
   UpdateInvoiceData,
 } from "@/lib/api/invoices";
+import { analytics } from "@/lib/analytics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ── List invoices ──────────────────────────────────────────────────────────
@@ -49,8 +50,9 @@ export function useCreateInvoice() {
 
   return useMutation({
     mutationFn: (data: CreateInvoiceData) => invoicesApi.createInvoice(data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      analytics.invoiceCreated(variables.currency ?? "USD");
     },
   });
 }
@@ -119,6 +121,7 @@ export function useSendInvoiceEmail() {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["invoices", id] });
+      analytics.invoiceEmailSent();
     },
   });
 }

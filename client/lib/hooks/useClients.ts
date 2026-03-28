@@ -6,6 +6,7 @@ import {
   CreateClientData,
   UpdateClientData,
 } from "@/lib/api/clients";
+import { analytics } from "@/lib/analytics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ─── List ──────────────────────────────────────────────────────────────────
@@ -40,6 +41,7 @@ export function useCreateClient() {
     mutationFn: (data: CreateClientData) => clientsApi.createClient(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      analytics.clientCreated();
     },
   });
 }
