@@ -6,7 +6,7 @@ export function trackEvent(
 ) {
   if (typeof window === "undefined") return;
   if (!process.env.NEXT_PUBLIC_GA_ID) return;
-  sendGAEvent("event", event, params);
+  sendGAEvent("event", event, params ?? {});
 }
 
 // Predefined events for type safety
