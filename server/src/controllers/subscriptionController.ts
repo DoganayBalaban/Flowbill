@@ -6,9 +6,9 @@ import { catchAsync } from "../utils/catchAsync";
 export const createCheckout = catchAsync(
   async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
-    const { priceId } = req.body;
+    const { variantId } = req.body;
 
-    const url = await SubscriptionService.createCheckoutSession(userId, priceId);
+    const url = await SubscriptionService.createCheckoutSession(userId, variantId);
 
     return res.status(200).json({ success: true, url });
   },

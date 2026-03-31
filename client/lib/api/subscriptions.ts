@@ -1,10 +1,20 @@
 import api from "./client";
 
+export interface PlanLimits {
+  clients: number;
+  activeProjects: number;
+  invoicesPerMonth: number;
+  invoicesTotalCap: number;
+  expenseTracking: boolean;
+  clientPortal: boolean;
+}
+
 export interface SubscriptionStatus {
   plan: string;
   plan_expires_at: string | null;
-  stripe_subscription_status: string | null;
-  stripe_subscription_id: string | null;
+  lemon_subscription_status: string | null;
+  lemon_subscription_id: string | null;
+  limits: PlanLimits;
 }
 
 export const subscriptionsApi = {
@@ -14,9 +24,9 @@ export const subscriptionsApi = {
   },
 
   createCheckout: async (
-    priceId: string,
+    variantId: string,
   ): Promise<{ success: boolean; url: string }> => {
-    const response = await api.post("/subscriptions/checkout", { priceId });
+    const response = await api.post("/subscriptions/checkout", { variantId });
     return response.data;
   },
 

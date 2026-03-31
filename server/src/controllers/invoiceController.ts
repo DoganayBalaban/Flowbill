@@ -167,7 +167,7 @@ export const createPaymentLink = catchAsync(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     const userId = req.user!.id;
     const invoiceId = req.params.id as string;
-    const result = await InvoiceService.createStripePaymentLink(
+    const result = await InvoiceService.createPaymentLink(
       userId,
       invoiceId,
     );

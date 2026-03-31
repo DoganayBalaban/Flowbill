@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import { BCRYPT_ROUNDS } from "../config/constants";
 import { env } from "../config/env";
 import { redis } from "../config/redis";
-import { stripe } from "../config/stripe";
 import { AppError } from "../utils/appError";
 import { cache } from "../utils/cache";
 import { prisma } from "../utils/prisma";
@@ -383,14 +382,7 @@ export class AuthService {
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) throw new AppError("Incorrect password", 401);
 
-    // Cancel Stripe subscription if active
-    if (user.stripe_subscription_id) {
-      try {
-        await stripe.subscriptions.cancel(user.stripe_subscription_id);
-      } catch {
-        // Non-fatal: subscription may already be cancelled
-      }
-    }
+    // Note: LemonSqueezy subscription cancellation is handled via the customer portal
 
     await prisma.$transaction(async (tx) => {
       // Revoke all refresh tokens
@@ -409,8 +401,8 @@ export class AuthService {
           first_name: null,
           last_name: null,
           avatar_url: null,
-          stripe_subscription_id: null,
-          stripe_customer_id: null,
+          lemon_subscription_id: null,
+          lemon_customer_id: null,
           verification_token: null,
           password_reset_token: null,
         },

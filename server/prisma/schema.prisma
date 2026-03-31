@@ -32,9 +32,9 @@ model User {
   hourly_rate     Decimal?  @db.Decimal(10, 2)
   plan            String    @default("free") @db.VarChar(20) // free, starter, pro, agency
   plan_expires_at DateTime?
-  stripe_customer_id          String?   @unique @db.VarChar(100)
-  stripe_subscription_id      String?   @unique @db.VarChar(100)
-  stripe_subscription_status  String?   @db.VarChar(30) // active, past_due, canceled, trialing
+  lemon_customer_id          String?   @unique @db.VarChar(100)
+  lemon_subscription_id      String?   @unique @db.VarChar(100)
+  lemon_subscription_status  String?   @db.VarChar(30) // active, paused, past_due, unpaid, cancelled, expired, on_trial
   email_verified             Boolean   @default(false)
   is_onboarding_completed    Boolean   @default(false)
   verification_token         String?   @unique
@@ -195,9 +195,9 @@ model Invoice {
   pdf_generated_at DateTime?
   last_reminder_at          DateTime?
   sent_at                   DateTime?
-  stripe_payment_link_id    String?   @db.VarChar(100)
-  stripe_payment_link_url   String?
-  stripe_payment_intent_id  String?   @db.VarChar(100)
+  lemon_checkout_id    String?   @db.VarChar(200)
+  lemon_checkout_url   String?
+  lemon_order_id       String?   @db.VarChar(100)
   created_at       DateTime  @default(now())
   updated_at       DateTime  @default(now()) @updatedAt
   deleted_at       DateTime?
@@ -242,8 +242,8 @@ model Payment {
   reference_number String?  @db.VarChar(100)
   paid_at          DateTime
   notes                    String?
-  stripe_payment_intent_id String?  @db.VarChar(100)
-  created_at               DateTime @default(now())
+  lemon_order_id String?  @db.VarChar(100)
+  created_at     DateTime @default(now())
 
   // Relations
   invoice Invoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)

@@ -1,79 +1,49 @@
 import { Request, Response } from "express";
-import Stripe from "stripe";
-import { env } from "../config/env";
-import { stripe } from "../config/stripe";
+import { verifyLSWebhookSignature } from "../config/lemonSqueezy";
 import { InvoiceService } from "../services/invoiceService";
 import { SubscriptionService } from "../services/subscriptionService";
 import { catchAsync } from "../utils/catchAsync";
 import logger from "../utils/logger";
 
-export const handleInvoicePaymentWebhook = catchAsync(
+export const handleLemonSqueezyWebhook = catchAsync(
   async (req: Request, res: Response) => {
-    const sig = req.headers["stripe-signature"] as string;
+    const signature = req.headers["x-signature"] as string;
 
-    let event: Stripe.Event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        env.STRIPE_INVOICE_WEBHOOK_SECRET,
-      );
-    } catch (err) {
-      logger.error("[webhook] Invoice signature verification failed", err);
-      return res.status(400).json({ error: "Webhook signature verification failed" });
+    if (!signature || !verifyLSWebhookSignature(req.body as Buffer, signature)) {
+      logger.error("[webhook] LemonSqueezy signature verification failed");
+      return res.status(400).json({ error: "Invalid webhook signature" });
     }
 
-    logger.info(`[webhook] Invoice event received: ${event.type}`);
+    const payload = JSON.parse((req.body as Buffer).toString());
+    const eventName = req.headers["x-event-name"] as string;
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
-      if (session.metadata?.invoiceId) {
-        await InvoiceService.handleStripeInvoicePaid(session);
-        logger.info(
-          `[webhook] Invoice ${session.metadata.invoiceId} marked as paid`,
-        );
+    logger.info(`[webhook] LemonSqueezy event received: ${eventName}`);
+
+    switch (eventName) {
+      case "subscription_created":
+      case "subscription_updated":
+        await SubscriptionService.handleSubscriptionCreatedOrUpdated(payload);
+        break;
+
+      case "subscription_cancelled":
+        await SubscriptionService.handleSubscriptionCancelled(payload);
+        break;
+
+      case "subscription_payment_failed":
+        await SubscriptionService.handlePaymentFailed(payload);
+        break;
+
+      case "order_created": {
+        const invoiceId = payload.meta?.custom_data?.invoiceId as string | undefined;
+        if (invoiceId) {
+          await InvoiceService.handleLemonSqueezyOrderPaid(payload);
+          logger.info(`[webhook] Invoice ${invoiceId} marked as paid via LemonSqueezy`);
+        }
+        break;
       }
-    }
 
-    return res.json({ received: true });
-  },
-);
-
-export const handleSubscriptionWebhook = catchAsync(
-  async (req: Request, res: Response) => {
-    const sig = req.headers["stripe-signature"] as string;
-
-    let event: Stripe.Event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        env.STRIPE_WEBHOOK_SECRET,
-      );
-    } catch (err) {
-      logger.error("[webhook] Subscription signature verification failed", err);
-      return res.status(400).json({ error: "Webhook signature verification failed" });
-    }
-
-    logger.info(`[webhook] Subscription event received: ${event.type}`);
-
-    switch (event.type) {
-      case "customer.subscription.created":
-      case "customer.subscription.updated":
-        await SubscriptionService.handleSubscriptionUpdated(
-          event.data.object as Stripe.Subscription,
-        );
-        break;
-      case "customer.subscription.deleted":
-        await SubscriptionService.handleSubscriptionDeleted(
-          event.data.object as Stripe.Subscription,
-        );
-        break;
-      case "invoice.payment_failed":
-        await SubscriptionService.handlePaymentFailed(
-          event.data.object as Stripe.Invoice,
-        );
-        break;
+      default:
+        logger.info(`[webhook] Unhandled event: ${eventName}`);
     }
 
     return res.json({ received: true });

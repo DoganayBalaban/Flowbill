@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { AppError } from "../utils/appError";
+import { assertCanCreateProject } from "../utils/planGuard";
 import { prisma } from "../utils/prisma";
 import {
   AddAttachmentInput,
@@ -69,6 +70,7 @@ export class ProjectService {
       color?: string;
     },
   ) {
+    await assertCanCreateProject(userId);
     return await prisma.$transaction(async (tx) => {
       const project = await tx.project.create({
         data: {

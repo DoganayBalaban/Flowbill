@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { AppError } from "../utils/appError";
+import { assertCanCreateClient } from "../utils/planGuard";
 import { prisma } from "../utils/prisma";
 
 export class ClientService {
@@ -140,6 +141,7 @@ export class ClientService {
       hourly_rate?: number;
     },
   ) {
+    await assertCanCreateClient(userId);
     return await prisma.$transaction(async (tx) => {
       const client = await tx.client.create({
         data: {

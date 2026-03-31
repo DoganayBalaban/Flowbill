@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { redis } from "../config/redis";
 import { AppError } from "../utils/appError";
+import { assertCanUseExpenseTracking } from "../utils/planGuard";
 import { prisma } from "../utils/prisma";
 import {
   CreateExpenseInput,
@@ -60,6 +61,7 @@ export class ExpenseService {
   }
 
   static async createExpense(userId: string, data: CreateExpenseInput) {
+    await assertCanUseExpenseTracking(userId);
     const expense = await prisma.expense.create({
       data: {
         user_id: userId,

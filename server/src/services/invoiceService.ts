@@ -1,11 +1,11 @@
-import Stripe from "stripe";
 import { env } from "../config/env";
+import { lsRequest } from "../config/lemonSqueezy";
 import { redis } from "../config/redis";
 import { getIO } from "../config/socket";
-import { stripe } from "../config/stripe";
 import { emailQueue } from "../queues/emailQueue";
 import { pdfQueue } from "../queues/pdfQueue";
 import { AppError } from "../utils/appError";
+import { assertCanCreateInvoice } from "../utils/planGuard";
 import { prisma } from "../utils/prisma";
 import { getSignedDownloadUrl } from "../utils/storageUpload";
 import {
@@ -17,6 +17,7 @@ import {
 
 export class InvoiceService {
   static async createInvoice(userId: string, data: CreateInvoiceInput) {
+    await assertCanCreateInvoice(userId);
     return await prisma.$transaction(
       async (tx) => {
         if (data.dueDate < data.issueDate) {
@@ -675,10 +676,10 @@ export class InvoiceService {
   }
 
   /**
-   * Creates (or returns cached) a Stripe Checkout Session URL for the client
+   * Creates (or returns cached) a LemonSqueezy checkout URL for the client
    * to pay the invoice online.
    */
-  static async createStripePaymentLink(
+  static async createPaymentLink(
     userId: string,
     invoiceId: string,
   ): Promise<{ url: string }> {
@@ -706,56 +707,62 @@ export class InvoiceService {
     }
 
     // Return existing URL if already generated
-    if (invoice.stripe_payment_link_url && invoice.stripe_payment_link_id) {
-      return { url: invoice.stripe_payment_link_url };
+    if (invoice.lemon_checkout_url && invoice.lemon_checkout_id) {
+      return { url: invoice.lemon_checkout_url };
     }
 
     const amountInCents = Math.round(Number(invoice.total) * 100);
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      customer_email: invoice.client.email ?? undefined,
-      line_items: [
-        {
-          price_data: {
-            currency: invoice.currency.toLowerCase(),
-            unit_amount: amountInCents,
-            product_data: {
-              name: `Invoice ${invoice.invoice_number}`,
-              ...(invoice.notes ? { description: invoice.notes } : {}),
-            },
+    const body = {
+      data: {
+        type: "checkouts",
+        attributes: {
+          custom_price: amountInCents,
+          checkout_options: { embed: false },
+          checkout_data: {
+            email: invoice.client.email ?? undefined,
+            custom: { invoiceId: invoice.id, userId },
           },
-          quantity: 1,
+          product_options: {
+            name: `Invoice ${invoice.invoice_number}`,
+            description: invoice.notes ?? undefined,
+            redirect_url: `${env.FRONTEND_URL}/invoices/${invoice.id}?payment=success`,
+          },
         },
-      ],
-      success_url: `${env.FRONTEND_URL}/invoices/${invoice.id}?payment=success`,
-      cancel_url: `${env.FRONTEND_URL}/invoices/${invoice.id}`,
-      metadata: {
-        invoiceId: invoice.id,
-        userId,
+        relationships: {
+          store: {
+            data: { type: "stores", id: env.LEMONSQUEEZY_STORE_ID },
+          },
+        },
       },
-    });
+    };
+
+    const response = await lsRequest<{
+      data: { id: string; attributes: { url: string } };
+    }>("/checkouts", { method: "POST", body: JSON.stringify(body) });
+
+    const checkoutId = response.data.id;
+    const checkoutUrl = response.data.attributes.url;
 
     await prisma.invoice.update({
       where: { id: invoiceId },
       data: {
-        stripe_payment_link_id: session.id,
-        stripe_payment_link_url: session.url,
+        lemon_checkout_id: checkoutId,
+        lemon_checkout_url: checkoutUrl,
       },
     });
 
-    return { url: session.url! };
+    return { url: checkoutUrl };
   }
 
   /**
-   * Called from the Stripe webhook when a checkout.session.completed event fires.
+   * Called from the LemonSqueezy webhook when an order_created event fires for an invoice.
    * Idempotent — skips if invoice is already paid.
    */
-  static async handleStripeInvoicePaid(
-    session: Stripe.Checkout.Session,
-  ): Promise<void> {
-    const { invoiceId, userId } = session.metadata ?? {};
+  static async handleLemonSqueezyOrderPaid(payload: any): Promise<void> {
+    const customData = payload.meta?.custom_data ?? {};
+    const invoiceId = customData.invoiceId as string | undefined;
+    const userId = customData.userId as string | undefined;
     if (!invoiceId || !userId) return;
 
     const invoice = await prisma.invoice.findFirst({
@@ -765,11 +772,9 @@ export class InvoiceService {
 
     if (!invoice || invoice.status === "paid") return;
 
-    const amountPaid = (session.amount_total ?? 0) / 100;
-    const paymentIntentId =
-      typeof session.payment_intent === "string"
-        ? session.payment_intent
-        : undefined;
+    const attrs = payload.data?.attributes ?? {};
+    const amountPaid = (attrs.total ?? 0) / 100;
+    const orderId = String(payload.data?.id ?? "");
 
     await prisma.$transaction(
       async (tx) => {
@@ -777,11 +782,11 @@ export class InvoiceService {
           data: {
             invoice_id: invoiceId,
             amount: amountPaid,
-            payment_method: "stripe",
-            reference_number: paymentIntentId,
+            payment_method: "lemonsqueezy",
+            reference_number: orderId,
             paid_at: new Date(),
-            notes: "Paid via Stripe",
-            stripe_payment_intent_id: paymentIntentId,
+            notes: "Paid via LemonSqueezy",
+            lemon_order_id: orderId,
           },
         });
 
@@ -790,7 +795,7 @@ export class InvoiceService {
           data: {
             status: "paid",
             paid_at: new Date(),
-            stripe_payment_intent_id: paymentIntentId,
+            lemon_order_id: orderId,
           },
         });
 
@@ -806,7 +811,7 @@ export class InvoiceService {
             entity_type: "invoice",
             entity_id: invoiceId,
             old_values: { status: invoice.status },
-            new_values: { status: "paid", paid_via: "stripe", amountPaid },
+            new_values: { status: "paid", paid_via: "lemonsqueezy", amountPaid },
           },
         });
       },

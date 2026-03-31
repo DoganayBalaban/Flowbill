@@ -15,9 +15,9 @@ export function useSubscriptionStatus() {
 
 export function useCreateCheckout() {
   return useMutation({
-    mutationFn: (priceId: string) => subscriptionsApi.createCheckout(priceId),
-    onSuccess: (data, priceId) => {
-      analytics.checkoutStarted(priceId);
+    mutationFn: (variantId: string) => subscriptionsApi.createCheckout(variantId),
+    onSuccess: (data, variantId) => {
+      analytics.checkoutStarted(variantId);
       window.location.href = data.url;
     },
   });

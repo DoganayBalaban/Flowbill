@@ -1,26 +1,17 @@
 import express, { Router } from "express";
-import {
-  handleInvoicePaymentWebhook,
-  handleSubscriptionWebhook,
-} from "../controllers/webhookController";
+import { handleLemonSqueezyWebhook } from "../controllers/webhookController";
 
 const router = Router();
 
 /**
- * IMPORTANT: These routes use express.raw() to preserve the raw request body
- * required for Stripe webhook signature verification.
- * They MUST be mounted in index.ts BEFORE express.json().
+ * IMPORTANT: This route uses express.raw() to preserve the raw request body
+ * required for LemonSqueezy webhook signature verification.
+ * It MUST be mounted in index.ts BEFORE express.json().
  */
 router.post(
-  "/stripe/invoices",
+  "/lemonsqueezy",
   express.raw({ type: "application/json" }),
-  handleInvoicePaymentWebhook,
-);
-
-router.post(
-  "/stripe/subscriptions",
-  express.raw({ type: "application/json" }),
-  handleSubscriptionWebhook,
+  handleLemonSqueezyWebhook,
 );
 
 export default router;

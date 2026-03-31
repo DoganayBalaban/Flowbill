@@ -26,13 +26,26 @@ import { toast } from "sonner";
 
 const PLANS = [
   {
+    id: "free",
+    name: "Free",
+    price: "$0",
+    description: "Perfect for getting started.",
+    variantId: "",
+    features: [
+      "3 active clients",
+      "10 invoices/month",
+      "Time tracking",
+      "Client portal",
+    ],
+  },
+  {
     id: "starter",
     name: "Starter",
     price: "$9",
-    description: "Perfect for solo freelancers just getting started.",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER ?? "",
+    description: "For solo freelancers.",
+    variantId: process.env.NEXT_PUBLIC_LS_VARIANT_STARTER ?? "",
     features: [
-      "Up to 10 active clients",
+      "10 active clients",
       "Unlimited invoices",
       "Time tracking",
       "PDF generation",
@@ -43,8 +56,8 @@ const PLANS = [
     id: "pro",
     name: "Pro",
     price: "$19",
-    description: "For established freelancers who need more power.",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO ?? "",
+    description: "For established freelancers.",
+    variantId: process.env.NEXT_PUBLIC_LS_VARIANT_PRO ?? "",
     features: [
       "Unlimited clients",
       "Unlimited invoices",
@@ -53,22 +66,6 @@ const PLANS = [
       "Client portal",
       "Expense tracking",
       "Advanced reports",
-      "Priority support",
-    ],
-  },
-  {
-    id: "agency",
-    name: "Agency",
-    price: "$49",
-    description: "Built for teams and agencies managing multiple freelancers.",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY ?? "",
-    features: [
-      "Everything in Pro",
-      "Team members",
-      "Role-based access",
-      "Client branding",
-      "API access",
-      "Dedicated support",
     ],
   },
 ];
@@ -79,9 +76,12 @@ function getStatusBadge(status: string | null) {
   if (!status) return null;
   const map: Record<string, { label: string; className: string }> = {
     active: { label: "Active", className: "bg-green-100 text-green-700" },
-    trialing: { label: "Trial", className: "bg-blue-100 text-blue-700" },
+    on_trial: { label: "Trial", className: "bg-blue-100 text-blue-700" },
     past_due: { label: "Past Due", className: "bg-red-100 text-red-700" },
-    canceled: { label: "Canceled", className: "bg-gray-100 text-gray-700" },
+    cancelled: { label: "Cancelled", className: "bg-gray-100 text-gray-700" },
+    paused: { label: "Paused", className: "bg-yellow-100 text-yellow-700" },
+    expired: { label: "Expired", className: "bg-gray-100 text-gray-500" },
+    unpaid: { label: "Unpaid", className: "bg-red-100 text-red-600" },
   };
   const info = map[status];
   if (!info) return null;
@@ -92,12 +92,12 @@ function getStatusBadge(status: string | null) {
   );
 }
 
-// ── Stripe return handler (needs Suspense for useSearchParams) ───────────────
+// ── LemonSqueezy return handler (needs Suspense for useSearchParams) ─────────
 
-function StripeReturnHandler({ refetch }: { refetch: () => void }) {
+function BillingReturnHandler({ refetch }: { refetch: () => void }) {
   const searchParams = useSearchParams();
   useEffect(() => {
-    if (searchParams.get("session_id")) {
+    if (searchParams.get("upgraded")) {
       refetch();
       toast.success("Plan upgraded successfully!");
     }
@@ -132,7 +132,7 @@ export default function BillingPage() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
       <Suspense fallback={null}>
-        <StripeReturnHandler refetch={refetch} />
+        <BillingReturnHandler refetch={refetch} />
       </Suspense>
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Billing & Plans</h1>
@@ -152,7 +152,7 @@ export default function BillingPage() {
         <CardContent className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-lg font-semibold capitalize">{currentPlan}</span>
-            {getStatusBadge(subscription?.stripe_subscription_status ?? null)}
+            {getStatusBadge(subscription?.lemon_subscription_status ?? null)}
           </div>
           {subscription?.plan_expires_at && (
             <p className="text-xs text-muted-foreground">
@@ -189,10 +189,11 @@ export default function BillingPage() {
         <h2 className="text-lg font-semibold mb-4">
           {isOnPaidPlan ? "Change Plan" : "Upgrade Your Plan"}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {PLANS.map((plan) => {
             const isCurrent = currentPlan === plan.id;
             const isPopular = plan.id === "pro";
+            const isFree = plan.id === "free";
 
             return (
               <Card
@@ -243,15 +244,15 @@ export default function BillingPage() {
                   <Button
                     className="w-full"
                     variant={isCurrent ? "outline" : isPopular ? "default" : "outline"}
-                    disabled={isCurrent || createCheckout.isPending}
+                    disabled={isCurrent || isFree || createCheckout.isPending}
                     onClick={() =>
-                      !isCurrent && createCheckout.mutate(plan.priceId)
+                      !isCurrent && !isFree && createCheckout.mutate(plan.variantId)
                     }
                   >
                     {createCheckout.isPending ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : null}
-                    {isCurrent ? "Current Plan" : `Upgrade to ${plan.name}`}
+                    {isCurrent ? "Current Plan" : isFree ? "Free" : `Upgrade to ${plan.name}`}
                   </Button>
                 </CardFooter>
               </Card>
