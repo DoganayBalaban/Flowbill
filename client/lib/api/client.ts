@@ -59,6 +59,14 @@ api.interceptors.response.use(
       }
     }
 
+    // Plan limit error — fire a custom event so the UI can show an upgrade toast
+    if (error.response?.status === 403) {
+      const message = error.response?.data?.message ?? "Plan limit reached.";
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("plan-limit-error", { detail: { message } }));
+      }
+    }
+
     return Promise.reject(error);
   }
 );
