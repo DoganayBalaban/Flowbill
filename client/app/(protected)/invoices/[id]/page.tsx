@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { useTranslation } from "@/lib/i18n/context";
 import {
-  useCreatePaymentLink,
   useDownloadPdf,
   useGeneratePdf,
   useInvoice,
@@ -30,12 +29,9 @@ import {
 } from "@/lib/hooks/useInvoices";
 import {
   ArrowLeft,
-  Check,
-  Copy,
   CreditCard,
   Download,
   FileText,
-  Link,
   Loader2,
   Mail,
   RefreshCw,
@@ -89,28 +85,7 @@ export default function InvoiceDetailPage() {
   const generatePdf = useGeneratePdf();
   const downloadPdf = useDownloadPdf();
   const sendEmail = useSendInvoiceEmail();
-  const createPaymentLink = useCreatePaymentLink();
-
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-
-  const handleCopyPaymentLink = (url: string) => {
-    navigator.clipboard.writeText(url);
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 2000);
-  };
-
-  const handleCreatePaymentLink = () => {
-    createPaymentLink.mutate(invoiceId, {
-      onSuccess: (data) => {
-        handleCopyPaymentLink(data.data.url);
-        toast.success(t("invoices.toast_payment_link_copied"));
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onError: (err: any) =>
-        toast.error(err?.response?.data?.message ?? t("invoices.toast_payment_link_error")),
-    });
-  };
 
   if (isLoading) {
     return (
@@ -256,33 +231,6 @@ export default function InvoiceDetailPage() {
             </>
           )}
 
-          {(invoice.status === "sent" || invoice.status === "overdue") && (
-            <>
-              {invoice.stripe_payment_link_url ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyPaymentLink(invoice.stripe_payment_link_url!)}
-                >
-                  {linkCopied ? (
-                    <Check className="mr-2 h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="mr-2 h-4 w-4" />
-                  )}
-                  {linkCopied ? t("invoices.copied") : t("invoices.copy_payment_link")}
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" onClick={handleCreatePaymentLink} disabled={createPaymentLink.isPending}>
-                  {createPaymentLink.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Link className="mr-2 h-4 w-4" />
-                  )}
-                  {t("invoices.create_payment_link")}
-                </Button>
-              )}
-            </>
-          )}
 
           {invoice.status !== "paid" && invoice.status !== "cancelled" && invoice.status !== "draft" && (
             <Button size="sm" onClick={() => setPaymentDialogOpen(true)}>

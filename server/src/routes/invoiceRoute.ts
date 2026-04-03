@@ -1,7 +1,6 @@
 import { Router } from "express";
 import {
   createInvoice,
-  createPaymentLink,
   deleteInvoice,
   downloadInvoicePdf,
   generateInvoicePdf,
@@ -217,6 +216,5 @@ router.post("/:id/pdf", protect, generateInvoicePdf);
 router.get("/:id/download", protect, downloadInvoicePdf);
 router.post("/:id/send", protect, invoiceSendLimiter, sendInvoiceEmail);
 router.post("/:id/mark-paid", protect, markInvoiceAsPaid);
-router.post("/:id/payment-link", protect, invoiceSendLimiter, createPaymentLink);
 
 export default router;

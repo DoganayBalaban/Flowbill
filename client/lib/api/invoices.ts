@@ -46,9 +46,7 @@ export interface Invoice {
   paid_at: string | null;
   notes: string | null;
   terms: string | null;
-  stripe_payment_link_id: string | null;
-  stripe_payment_link_url: string | null;
-  stripe_payment_intent_id: string | null;
+  lemon_checkout_url: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -234,12 +232,6 @@ export const invoicesApi = {
     return response.data;
   },
 
-  createPaymentLink: async (
-    id: string,
-  ): Promise<{ success: boolean; data: { url: string } }> => {
-    const response = await api.post(`/invoices/${id}/payment-link`);
-    return response.data;
-  },
 };
 
 export default invoicesApi;

@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { verifyLSWebhookSignature } from "../config/lemonSqueezy";
-import { InvoiceService } from "../services/invoiceService";
 import { SubscriptionService } from "../services/subscriptionService";
 import { catchAsync } from "../utils/catchAsync";
 import logger from "../utils/logger";
@@ -32,15 +31,6 @@ export const handleLemonSqueezyWebhook = catchAsync(
       case "subscription_payment_failed":
         await SubscriptionService.handlePaymentFailed(payload);
         break;
-
-      case "order_created": {
-        const invoiceId = payload.meta?.custom_data?.invoiceId as string | undefined;
-        if (invoiceId) {
-          await InvoiceService.handleLemonSqueezyOrderPaid(payload);
-          logger.info(`[webhook] Invoice ${invoiceId} marked as paid via LemonSqueezy`);
-        }
-        break;
-      }
 
       default:
         logger.info(`[webhook] Unhandled event: ${eventName}`);

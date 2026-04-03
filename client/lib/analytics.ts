@@ -21,8 +21,6 @@ export const analytics = {
   invoicePdfDownloaded: () => trackEvent("invoice_pdf_downloaded"),
   invoiceEmailSent: () => trackEvent("invoice_email_sent"),
   invoiceMarkedPaid: () => trackEvent("invoice_marked_paid"),
-  paymentLinkCreated: () => trackEvent("payment_link_created"),
-
   // Expenses
   expenseCreated: () => trackEvent("expense_created"),
 
