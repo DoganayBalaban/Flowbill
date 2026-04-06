@@ -14,7 +14,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/doganaybalaban/timelyne">
-    <img src="client/public/flowbill-logo.png" alt="Logo" width="300" height="200">
+    <img src="client/public/logo-wo-text.png" alt="Logo" width="120" height="120">
   </a>
 
 <h3 align="center">Flowbill</h3>
@@ -70,7 +70,7 @@
   <img src="client/public/readme/gif.gif" alt="Flowbill Demo" width="100%">
 </div>
 
-**Flowbill** is an **all-in-one SaaS platform** designed for freelancers and small agencies to replace scattered tools like Excel, Word, and WhatsApp with a single, professional workspace. Track time, manage projects and clients, automate invoicing, accept online payments, and gain clear financial insights — all in one place.
+**Flowbill** is an **all-in-one SaaS platform** designed for freelancers and small agencies to replace scattered tools like Excel, Word, and WhatsApp with a single, professional workspace. Track time, manage projects and clients, automate invoicing, and gain clear financial insights — all in one place.
 
 **Our core promise:**
 
@@ -112,7 +112,7 @@
 
 ### 🗂️ Tasks (Kanban Board)
 
-<img src="client/public/readme/ss-tasks.png" alt="Tasks Kanban" width="100%">
+<img src="client/public/readme/ss-task.png" alt="Tasks Kanban" width="100%">
 
 ---
 
@@ -128,12 +128,6 @@
 
 ---
 
-### 🌐 Client Portal
-
-<img src="client/public/readme/ss-portal.png" alt="Client Portal" width="100%">
-
----
-
 ### ⏱️ Time Tracking
 
 <img src="client/public/readme/ss-timers.png" alt="Timers" width="100%">
@@ -143,12 +137,6 @@
 ### 💸 Expenses
 
 <img src="client/public/readme/ss-expenses.png" alt="Expenses" width="100%">
-
----
-
-### 💳 Billing & Subscription
-
-<img src="client/public/readme/ss-billing.png" alt="Billing" width="100%">
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -173,11 +161,12 @@
 
 - [![Docker][Docker]][Docker-url]
 - [![AWS][AWS]][AWS-url]
-- [![Stripe][Stripe]][Stripe-url]
+- [![LemonSqueezy][LemonSqueezy]][LemonSqueezy-url]
 - [![Socket.io][Socket.io]][Socket.io-url]
 - [![BullMQ][BullMQ]][BullMQ-url]
 - [![Sentry][Sentry]][Sentry-url]
 - [![Zod][Zod]][Zod-url]
+- [![Winston][Winston]][Winston-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -276,7 +265,6 @@ Flowbill is designed to be a **digital assistant** for freelancers:
 - Flowbill tracks time in the background
 - Generates invoices automatically as professional PDFs
 - Sends invoices directly to clients via a branded portal
-- Accepts online payments through Stripe
 - Follows up on payments with overdue alerts
 - Shows you exactly how much you earned with real-time dashboards
 
@@ -306,14 +294,15 @@ No clutter. No unnecessary features. Just what you need.
 
 - Magic-link based client access (no login required)
 - Clients can view all their invoices and project status
-- One-click online payment via Stripe Checkout
 - Branded portal experience
 
 ### 💳 Subscriptions & Billing
 
-- Free and Pro plans via Stripe Subscriptions
-- Self-service plan management through Stripe Customer Portal
-- Webhook-driven payment status sync
+- Four-tier plan system: **Free**, **Starter**, **Pro**, and **Agency**
+- Self-service plan management and upgrades via LemonSqueezy
+- Checkout and customer portal powered by LemonSqueezy
+- Webhook-driven subscription status sync
+- Plan limits enforced on clients, invoices, and expense tracking
 
 ### 📁 Project & Client Management
 
@@ -357,6 +346,7 @@ No clutter. No unnecessary features. Just what you need.
 - `GET /api/health` — live DB + Redis status with latency measurements (200/503)
 - `GET /api/docs` — interactive Swagger UI (OpenAPI 3.0) for all endpoints
 - Sentry error tracking on both frontend and backend
+- Structured logging with Winston (file + console transports)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -365,7 +355,7 @@ No clutter. No unnecessary features. Just what you need.
 ## Architecture
 
 ```
-timelyne/
+flowbill/
 ├── client/                  # Next.js 16 Frontend
 │   ├── app/                 # App Router pages
 │   │   ├── (auth)/          # Login, Register, Password Reset, Email Verification
@@ -392,8 +382,8 @@ timelyne/
 │       ├── validators/      # Zod schemas
 │       ├── queues/          # BullMQ job queues
 │       ├── workers/         # Background job processors
-│       ├── config/          # DB, Redis, S3, Stripe, Swagger
-│       └── utils/           # Helpers, email templates, utilities
+│       ├── config/          # DB, Redis, S3, LemonSqueezy, Swagger
+│       └── utils/           # Helpers, email templates, logger
 │
 └── docker-compose.yml       # Full-stack Docker setup
 ```
@@ -411,8 +401,7 @@ timelyne/
 - [x] Kanban task management
 - [x] Automated invoicing with PDF generation
 - [x] Client portal with magic-link access
-- [x] Online payments via Stripe Checkout
-- [x] Subscription plans via Stripe Billing
+- [x] Subscription plans via LemonSqueezy (Free / Starter / Pro / Agency)
 - [x] Financial dashboard with revenue charts
 - [x] Expense tracking with receipt uploads & net profit stats
 - [x] Real-time notifications (Socket.IO)
@@ -422,6 +411,7 @@ timelyne/
 - [x] Docker deployment with health checks
 - [x] Sentry error tracking (frontend + backend)
 - [x] GDPR-compliant account deletion
+- [x] Structured logging with Winston
 - [ ] Team support for small agencies
 - [ ] Mobile app
 
@@ -524,8 +514,8 @@ Project Link: [https://github.com/doganaybalaban/timelyne](https://github.com/do
 [Docker-url]: https://www.docker.com/
 [AWS]: https://img.shields.io/badge/AWS_S3-FF9900?style=for-the-badge&logo=amazons3&logoColor=white
 [AWS-url]: https://aws.amazon.com/s3/
-[Stripe]: https://img.shields.io/badge/Stripe-635BFF?style=for-the-badge&logo=stripe&logoColor=white
-[Stripe-url]: https://stripe.com/
+[LemonSqueezy]: https://img.shields.io/badge/LemonSqueezy-FFD400?style=for-the-badge&logo=lemonsqueezy&logoColor=black
+[LemonSqueezy-url]: https://www.lemonsqueezy.com/
 [Socket.io]: https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white
 [Socket.io-url]: https://socket.io/
 [BullMQ]: https://img.shields.io/badge/BullMQ-E34F26?style=for-the-badge&logo=redis&logoColor=white
@@ -534,3 +524,5 @@ Project Link: [https://github.com/doganaybalaban/timelyne](https://github.com/do
 [Sentry-url]: https://sentry.io/
 [Zod]: https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white
 [Zod-url]: https://zod.dev/
+[Winston]: https://img.shields.io/badge/Winston-231F20?style=for-the-badge&logo=winston&logoColor=white
+[Winston-url]: https://github.com/winstonjs/winston
